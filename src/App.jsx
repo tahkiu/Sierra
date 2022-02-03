@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import Node from './components/Node';
 import ReactFlow, { Controls, isEdge, addEdge, removeElements } from 'react-flow-renderer';
 import NodeForm from './components/NodeForm';
+import NewNodeDrawButton from './components/NewNodeDrawButton'
 import Help from './components/Help';
 import { BsFillInfoCircleFill, BsFillPlayFill, BsPlusCircle } from 'react-icons/bs';
 import SearchResults from './components/SearchResults';
@@ -9,11 +10,13 @@ import { Context } from './Store';
 import CustomEdge from './components/CustomEdge';
 import ConfirmationAlert from './components/ConfirmationAlert';
 import logo from './assets/images/logo.png';
+import {Button} from 'antd';
 
 const api = require('./neo4jApi');
 
 function App() {
   const [state, dispatch] = useContext(Context);
+  const [pageStatus, setPageStatus] = useState('LOADING');
   const [nodeFormStatus, setShowNodeForm] = useState(false);
   const toggleNodeForm = () => {
     setShowNodeForm(!nodeFormStatus);
@@ -34,11 +37,13 @@ function App() {
   useEffect(() => {
     fetchData().then((res) => {
       dispatch({ type: 'SET_DATA', payload: res });
+      setPageStatus("READY")
     });
 
     async function fetchData() {
       let result = await api.setUp();
       let props = await api.getProperties(result.entities);
+      console.log('fetched', props)
       return { entities: result.entities, neighbours: result.neighbours, props: props };
     }
   }, []);
@@ -161,6 +166,66 @@ function App() {
     setShowNodeForm(false);
   };
 
+  const renderContent = () => {
+    if(pageStatus  === "LOADING") {
+      return (<div> Loading ...</div>)
+    } else if (pageStatus === "READY") {
+      return (
+        <>
+          <div className="shadow-sm p-3 mb-3 bg-white d-flex justify-content-center main-buttons">
+            <button type="button" className="btn btn-primary mr-1" onClick={toggleNodeForm}>
+              <BsPlusCircle />
+            </button>
+            <NewNodeDrawButton addNode={addNode}/>
+            <button
+              type="button"
+              className="btn btn-primary ml-1"
+              disabled={state.nodes.length === 0}
+              onClick={handleSearch}
+            >
+              <BsFillPlayFill />
+            </button>
+            <Button type="primary">Hello</Button>
+          </div>
+
+          <button type="button" onClick={() => setShowHelp(!showHelp)} className="help-button btn btn-outline-secondary">
+            <BsFillInfoCircleFill />
+          </button>
+
+          {showHelp ? <Help hide={() => setShowHelp(false)} /> : null}
+
+          <ReactFlow
+            elements={state.nodes.concat(state.edges)}
+            style={{ marginTop: '5rem', width: '100%', height: '700px' }}
+            nodeTypes={{ special: Node }}
+            edgeTypes={{ custom: CustomEdge }}
+            onElementsRemove={(elementsToRemove) =>
+              setToastInfo({
+                show: true,
+                msg: `Are you sure you want to remove this ${isEdge(elementsToRemove[0]) ? 'edge' : 'node'}?`,
+                confirm: () => onElementsRemove(elementsToRemove),
+              })
+            }
+            onConnect={onConnect}
+          >
+            <Controls />
+          </ReactFlow>
+
+          {toastInfo.show ? (
+            <ConfirmationAlert
+              hide={() => setToastInfo({ ...toastInfo, show: false })}
+              msg={toastInfo.msg}
+              confirm={toastInfo.confirm}
+              attr={toastInfo.attr ? toastInfo.attr : null}
+            />
+          ) : null}
+
+          {/* {nodeFormStatus ? <NodeForm addNode={addNode} /> : null} */}
+          {showResults ? <SearchResults result={searchResult.result} query={searchResult.query} hide={() => setShowResults(false)} /> : null}
+        </>
+      )
+    }
+  }
   return (
     <div className="App" id="app-root">
       <img src={logo} style={
@@ -170,50 +235,7 @@ function App() {
           right:'3rem',
           width: '15rem'
         }}/>
-      <div className="shadow-sm p-3 mb-3 bg-white d-flex justify-content-center main-buttons">
-        <button type="button" className="btn btn-primary mr-1" onClick={toggleNodeForm}>
-          <BsPlusCircle />
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary ml-1"
-          disabled={state.nodes.length === 0}
-          onClick={handleSearch}
-        >
-          <BsFillPlayFill />
-        </button>
-      </div>
-      <button type="button" onClick={() => setShowHelp(!showHelp)} className="help-button btn btn-outline-secondary">
-        <BsFillInfoCircleFill />
-      </button>
-      {showHelp ? <Help hide={() => setShowHelp(false)} /> : null}
-      <ReactFlow
-        elements={state.nodes.concat(state.edges)}
-        style={{ marginTop: '5rem', width: '100%', height: '700px' }}
-        nodeTypes={{ special: Node }}
-        edgeTypes={{ custom: CustomEdge }}
-        onElementsRemove={(elementsToRemove) =>
-          setToastInfo({
-            show: true,
-            msg: `Are you sure you want to remove this ${isEdge(elementsToRemove[0]) ? 'edge' : 'node'}?`,
-            confirm: () => onElementsRemove(elementsToRemove),
-          })
-        }
-        onConnect={onConnect}
-      >
-        <Controls />
-      </ReactFlow>
-      {toastInfo.show ? (
-        <ConfirmationAlert
-          hide={() => setToastInfo({ ...toastInfo, show: false })}
-          msg={toastInfo.msg}
-          confirm={toastInfo.confirm}
-          attr={toastInfo.attr ? toastInfo.attr : null}
-        />
-      ) : null}
-
-      {nodeFormStatus ? <NodeForm addNode={addNode} /> : null}
-      {showResults ? <SearchResults result={searchResult.result} query={searchResult.query} hide={() => setShowResults(false)} /> : null}
+      {renderContent()}
     </div>
   );
 }

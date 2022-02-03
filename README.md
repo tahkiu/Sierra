@@ -14,6 +14,7 @@ new webpack.EnvironmentPlugin({
 }),
 
 ```
+
 Then, start running the database on Neo4j. Ensure that the database is active as shown in the following figure:
 
 ![image](https://user-images.githubusercontent.com/44084459/114523240-b31c9180-9c76-11eb-898c-050a8adcb899.png)
@@ -52,4 +53,3 @@ The application will start running at http://localhost:3000/.
 |   ├── index.jsx            # Application bootstrap and rendering with store
 └── static                   # Static public assets imported anywhere in source code
 ```
-

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Store from './Store';
 import './App.css';
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import 'antd/dist/antd.css';
 
 import * as serviceWorker from 'app/service-worker';
 import App from './App';

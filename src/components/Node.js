@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Predicate from './Predicate';
 import { Handle } from 'react-flow-renderer';
@@ -13,18 +13,44 @@ function Node(props) {
   const [predicates, setPredicates] = useState({});
   const [showDetails, setShowDetails] = useState(false);
   const [state, dispatch] = useContext(Context);
-
   const [propData, setPropData] = useState();
+  // for VEDA
+  const [ranTheta] = useState(Math.random() * 2 * Math.PI)
+  const [VEDAposition, setVEDAPosition] = useState([])
+
+  // for distinguishing drag and click
+  const mousePos = useRef(null)
+  const mouseDownCoords = (e) => {
+    mousePos.current = {x: e.clientX, y: e.clientY}
+  }
+  const isClick = (e) => {
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
+    return (mouseX < mousePos.current.x + 3 && mouseX > mousePos.current.x - 3)
+      && (mouseY < mousePos.current.y + 3 && mouseY > mousePos.current.y - 3)
+  }
+
 
   useEffect(async () => {
     const propValues = await api.fetchPropertyValues(props.data.label);
     setPropData(propValues);
   }, []);
 
-  var theta = [];
+  var theta = {};
   var n = Object.keys(predicates).length;
-  for (var i = 0; i < n; i++) {
-    theta.push((2 * i * Math.PI) / (n + 4)); // R * cos(theta + (i)2pi/kn)
+  let i = 0
+  for (const pre of VEDAposition) {
+    let angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
+      const checkAngle = angle % (Math.PI / 2)
+      if ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
+        i++;
+        angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
+    }
+    if (pre !== '') {
+      theta[pre] = angle
+    }
+    i++;
   }
 
   const [predsIsOpen, setPredsIsOpen] = useState([]);
@@ -40,6 +66,16 @@ function Node(props) {
 
   const addPredicate = (attr) => {
     setPredicates({ ...predicates, [attr]: [['0', '']] });
+    for (const [index, pos] of VEDAposition.entries()) {
+      if (pos === ''){
+        const newPos = [...VEDAposition]
+        newPos[index] = attr
+        setVEDAPosition(newPos)
+        return
+      }
+    }
+    setVEDAPosition([...VEDAposition, attr])
+
   };
 
   const updatePredicate = (newPred) => {
@@ -50,6 +86,12 @@ function Node(props) {
   const deletePredicate = (attr) => {
     var preds = JSON.parse(JSON.stringify(predicates));
     delete preds[attr];
+    const i = VEDAposition.indexOf(attr)
+    if (i != -1){
+      const newPos = [...VEDAposition]
+      newPos[i] = ''
+      setVEDAPosition(newPos)
+    }
     setPredicates(preds);
   };
 
@@ -83,7 +125,7 @@ function Node(props) {
           index={index}
           node={props.data.label}
           predicate={{ attr: attr, preds: predicates[attr] }}
-          theta={theta[index]}
+          theta={theta[attr]}
           changePred={updatePredicate}
           delPred={deletePredicate}
           togglePred={togglePredIsOpen}
@@ -100,7 +142,18 @@ function Node(props) {
         ></Predicate>
       ))}
       <div style={{ position: 'relative', top: '50%', transform: 'translateY(-50%)' }}>
-        <p className="h6" onClick={() => setShowDetails(!showDetails)}>
+        <p className="h6"
+          // onClick={(e) => {
+          //   console.log(e)
+          //   setShowDetails(!showDetails)}
+          // }
+          onMouseDown={e => mouseDownCoords(e)}
+          onMouseUp={(e) => {
+            if(isClick(e)) {
+              setShowDetails(!showDetails)
+            }
+          }}
+        >
           {props.data.label}
         </p>
       </div>

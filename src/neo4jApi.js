@@ -62,7 +62,7 @@ async function getNeighbours(entities) {
 // get properties of a list of nodes
 async function getProperties(entities) {
   var ret = {};
-  entities.map(async (entity) => {
+  const results = await Promise.all(entities.map(async (entity) => {
     var session = driver.session({ database: database });
     var retObj = await session
       .readTransaction(
@@ -80,9 +80,13 @@ async function getProperties(entities) {
       .finally(() => {
         return session.close();
       });
-    Object.assign(ret, retObj);
-  });
+    return retObj
 
+  }));
+  results.forEach((values) => {
+    Object.assign(ret, values);
+  })
+  console.log('returning', ret)
   return ret;
 }
 
