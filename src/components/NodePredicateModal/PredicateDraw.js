@@ -1,5 +1,5 @@
-import { Drawer, Button, Typography, Divider, Card, Form, Select } from 'antd';
-import { DeleteFilled } from '@ant-design/icons';
+import { Drawer, Button, Typography, Divider, Card, Form, Select, Tooltip } from 'antd';
+import { DeleteOutlined, PlusOutlined} from '@ant-design/icons';
 import React, {useState, useEffect} from 'react';
 import { cssNumber } from 'jquery';
 
@@ -23,7 +23,13 @@ const PredicateSelectorCard = ({
       size="small"
       title={`Predicate ${index + 1}`}
       extra={
-        <Button size="small" shape="circle" icon={<DeleteFilled />} />
+        <Button
+          size="small"
+          shape="circle"
+          onClick={() => {
+            removePredicate(index)
+          }}
+          icon={<DeleteOutlined />} />
       }>
       <Form layout='inline'>
         <Form.Item >
@@ -89,7 +95,6 @@ export default function({
   deletePredicate,
   propValues
 }){
-  // console.log('predicate ', attr, propValues)
   const [isInt, setIsInt] = useState(false);
   const [options, setOptions] = useState([]);
   const [predicate, setPredicate] = useState(JSON.parse(JSON.stringify(oldPredicate)));
@@ -121,6 +126,11 @@ export default function({
     // console.log('isInt', isIntCpy)
   }, []);
 
+  useEffect(() => {
+    updatePredicate(predicate)
+    console.log('updating in predicate draw')
+  },[predicate])
+
   const handleChange = (index, label, newVal) => {
     var preds = [...predicate.preds];
     preds[index][label] = newVal;
@@ -137,6 +147,10 @@ export default function({
     var preds = [...predicate.preds];
     preds.splice(i, 1);
     setPredicate({ ...predicate, preds: preds });
+    if(preds.length == 0){
+      deletePredicate(attr)
+      onClose()
+    }
   };
 
   return (
@@ -147,12 +161,29 @@ export default function({
       onClose={onClose}
       visible={visible}
     >
-      <Divider orientation="left">Selected Predicates</Divider>
+      <Divider orientation="left">
+        Selected Predicates
+        <Tooltip title="add new predicate">
+          <Button
+            style={{
+              position: 'relative',
+              top: -1,
+              left: 6
+            }}
+            size="small"
+            shape="circle"
+            onClick={() => {
+              addPredicate(attr)
+            }}
+            icon={<PlusOutlined />} />
+        </Tooltip>
+      </Divider>
       {
         predicate.preds.map((n, i) => {
           return (
             <PredicateSelectorCard
               key={`${i}`}
+              onClose={onClose}
               predVal={{op: n[0], value: n[1]}}
               removePredicate={removePredicate}
               handleChange={handleChange}

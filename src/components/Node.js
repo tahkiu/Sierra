@@ -81,6 +81,7 @@ function Node(props) {
 
   const updatePredicate = (newPred) => {
     //newPred: {attr: 'color', preds: [[0,1],[0,2]]
+    console.log('updating predicates', newPred)
     setPredicates({ ...predicates, [newPred.attr]: newPred.preds });
   };
 
@@ -127,10 +128,6 @@ function Node(props) {
           node={props.data.label}
           predicate={{ attr: attr, preds: predicates[attr] }}
           theta={theta[attr]}
-          changePred={updatePredicate}
-          delPred={deletePredicate}
-          togglePred={togglePredIsOpen}
-          open={predsIsOpen[index]}
           color={Constants.PRED_COLOR_V2[props.data.attributes.indexOf(attr) % Constants.PRED_COLOR_V2.length].secondary}
           nodeRad={(80 + Object.keys(predicates).length * 10) / 2}
           propValues={propData
@@ -140,7 +137,7 @@ function Node(props) {
             .map(function (item) {
               return item[attr];
             })}
-        ></Predicate>
+        />
       ))}
 
       <div style={{ position: 'relative', top: '50%', transform: 'translateY(-50%)' }}>

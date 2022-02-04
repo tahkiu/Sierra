@@ -5,14 +5,12 @@ import './predicateCheckBox.css';
 const {Text} = Typography
 const PredicateCheckBox = ({checked, title, palette, onAddPredicate, onDeletePredicate}) => {
   // const [checked, setChecked] = useState(false)
-  const [highlight, setHighlight] = useState(false)
   return (
     <div
       style={{
-        backgroundColor: highlight ? palette.light : '#f7f7fa',
+        "--hover-background-color": palette.light,
+        backgroundColor: checked ? palette.light: '',
       }}
-      onMouseEnter={() => {setHighlight(true)}}
-      onMouseLeave={() => {setHighlight(checked)}}
       onClick={() => {
         if(checked) {
           onDeletePredicate()

@@ -1,9 +1,9 @@
-import React from 'react';
-import PredicateFormModal from './PredicateFormModal';
+import React, { useEffect, useState } from 'react';
 
 function Predicate(props) {
   // size of property circle depends on number of predicates on property
   const predRadius = 6 + 2*props.predicate.preds.length;
+
   const predicateStyle = {
     background: props.color,
     position: 'absolute',
@@ -17,18 +17,7 @@ function Predicate(props) {
   };
   // x + R * cos(theta + (i)2pi/kn)
   return (
-    <div>
-      <div onClick={() => props.togglePred(props.index)} style={predicateStyle}></div>
-      <PredicateFormModal
-        color={props.color}
-        oldPred={props.predicate}
-        changePredicate={props.changePred}
-        delPredicate={props.delPred}
-        isOpen={props.open}
-        propValues={props.propValues}
-        hide={() => props.togglePred(props.index)}
-      />
-    </div>
+      <div style={predicateStyle}></div>
   );
 }
 

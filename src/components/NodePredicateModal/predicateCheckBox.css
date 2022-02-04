@@ -8,8 +8,12 @@
   align-items: center;
   height: 44px;
   transition: 0.2s;
+  background-color: #f7f7fa;
 }
 
+.predicate-container:hover {
+  background-color: var(--hover-background-color)
+}
 .ant-checkbox-inner .ant-checkbox-input {
   transform: scale(1.2);
 }
