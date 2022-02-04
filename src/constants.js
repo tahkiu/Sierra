@@ -53,3 +53,83 @@ export const PRED_COLORS = [
   'Sienna',
   'DeepPink'
 ];
+
+export const PRED_COLOR_V2 = [
+  // magenta
+  {
+    name: 'magenta',
+    primary: "#c41d7f",
+    light: "#fff0f6",
+    secondary: '#ffadd2'
+  },
+  // red
+  {
+    name: 'red',
+    primary: "#cf1322",
+    light: "#fff1f0",
+    secondary: '#ffa39e'
+  },
+  // volcano
+  {
+    name: 'volcano',
+    primary: "#d4380d",
+    light: "#fff2e8",
+    secondary: '#ffbb96'
+  },
+  // orange
+  {
+    name: 'orange',
+    primary: "#d46b08",
+    light: "#fff7e6",
+    secondary: '#ffd591'
+  },
+  // gold
+  {
+    name: 'gold',
+    primary: "#d48806",
+    light: "#fffbe6",
+    secondary: '#ffe58f'
+  },
+  // lime
+  {
+    name: 'lime',
+    primary: "#7cb305",
+    light: "#fcffe6",
+    secondary: '#eaff8f'
+  },
+  // green
+  {
+    name: 'green',
+    primary: "#389e0d",
+    light: "#f6ffed",
+    secondary: '#b7eb8f'
+  },
+  // cyan
+  {
+    name: 'cyan',
+    primary: "#08979c",
+    light: "#e6fffb",
+    secondary: '#87e8de'
+  },
+  // blue
+  {
+    name: 'blue',
+    primary: "#096dd9",
+    light: "#e6f7ff",
+    secondary: '#91d5ff'
+  },
+  // geekblue
+  {
+    name: 'geekblue',
+    primary: "#1d39c4",
+    light: "#f0f5ff",
+    secondary: '#adc6ff'
+  },
+  // purple
+  {
+    name: 'purple',
+    primary: "#531dab",
+    light: "#f9f0ff",
+    secondary: '#d3adf7'
+  },
+]

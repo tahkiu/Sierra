@@ -6,7 +6,7 @@ import { Context } from '../Store';
 import { BsPencilSquare, BsPlusCircle, BsFillEyeFill } from 'react-icons/bs';
 import { addEdge } from 'react-flow-renderer';
 import * as Constants from '../constants';
-
+import NodePredicateModal from './NodePredicateModal'
 const api = require('../neo4jApi');
 
 function Node(props) {
@@ -14,9 +14,25 @@ function Node(props) {
   const [showDetails, setShowDetails] = useState(false);
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState();
+
   // for VEDA
   const [ranTheta] = useState(Math.random() * 2 * Math.PI)
   const [VEDAposition, setVEDAPosition] = useState([])
+  var theta = {};
+  var n = Object.keys(predicates).length;
+  let i = 0
+  for (const pre of VEDAposition) {
+    let angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
+      const checkAngle = angle % (Math.PI / 2)
+      if ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
+        i++;
+        angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
+    }
+    if (pre !== '') {
+      theta[pre] = angle
+    }
+    i++;
+  }
 
   // for distinguishing drag and click
   const mousePos = useRef(null)
@@ -37,21 +53,6 @@ function Node(props) {
     setPropData(propValues);
   }, []);
 
-  var theta = {};
-  var n = Object.keys(predicates).length;
-  let i = 0
-  for (const pre of VEDAposition) {
-    let angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
-      const checkAngle = angle % (Math.PI / 2)
-      if ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
-        i++;
-        angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
-    }
-    if (pre !== '') {
-      theta[pre] = angle
-    }
-    i++;
-  }
 
   const [predsIsOpen, setPredsIsOpen] = useState([]);
   useEffect(() => {
@@ -130,7 +131,7 @@ function Node(props) {
           delPred={deletePredicate}
           togglePred={togglePredIsOpen}
           open={predsIsOpen[index]}
-          color={Constants.PRED_COLORS[props.data.attributes.indexOf(attr) % Constants.PRED_COLORS.length]}
+          color={Constants.PRED_COLOR_V2[props.data.attributes.indexOf(attr) % Constants.PRED_COLOR_V2.length].secondary}
           nodeRad={(80 + Object.keys(predicates).length * 10) / 2}
           propValues={propData
             .filter(function (item) {
@@ -141,6 +142,7 @@ function Node(props) {
             })}
         ></Predicate>
       ))}
+
       <div style={{ position: 'relative', top: '50%', transform: 'translateY(-50%)' }}>
         <p className="h6"
           // onClick={(e) => {
@@ -157,7 +159,21 @@ function Node(props) {
           {props.data.label}
         </p>
       </div>
-      <Modal
+      <NodePredicateModal
+        node={props.data.label}
+        nodeId={props.id}
+        targets={props.data.possibleTargets}
+        attributes={props.data.attributes}
+        predicates={predicates}
+        visible={showDetails}
+        addPredicate={addPredicate}
+        deletePredicate={deletePredicate}
+        updatePredicate={updatePredicate}
+        propData={propData}
+        currPos={[props.xPos, props.yPos]}
+        onClose={() => {setShowDetails(false)}} />
+
+      {/* <Modal
         node={props.data.label}
         nodeId={props.id}
         targets={props.data.possibleTargets}
@@ -168,7 +184,7 @@ function Node(props) {
         addPredicate={addPredicate}
         togglePred={togglePredIsOpen}
         currPos={[props.xPos, props.yPos]}
-      ></Modal>
+      /> */}
     </div>
   );
 }
