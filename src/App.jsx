@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Node from './components/Node';
-import ReactFlow, { Controls, isEdge, addEdge, removeElements } from 'react-flow-renderer';
+import ReactFlow, { Controls, isEdge, addEdge, removeElements, Background } from 'react-flow-renderer';
 import NodeForm from './components/NodeForm';
-import NewNodeDrawButton from './components/NewNodeDrawButton'
+import NewNodeDrawButton from './components/NewNodeDrawButton';
+import CypherTextEditor from './components/TextEditor'
 import Help from './components/Help';
 import { BsFillInfoCircleFill, BsFillPlayFill, BsPlusCircle } from 'react-icons/bs';
 import SearchResults from './components/SearchResults';
@@ -11,6 +12,8 @@ import CustomEdge from './components/CustomEdge';
 import ConfirmationAlert from './components/ConfirmationAlert';
 import logo from './assets/images/logo.png';
 import {Button} from 'antd';
+import {InfoCircleOutlined, CopyOutlined} from '@ant-design/icons'
+import Title from 'antd/lib/typography/Title';
 
 const api = require('./neo4jApi');
 
@@ -172,31 +175,39 @@ function App() {
     } else if (pageStatus === "READY") {
       return (
         <>
-          <div className="shadow-sm p-3 mb-3 bg-white d-flex justify-content-center main-buttons">
-            <button type="button" className="btn btn-primary mr-1" onClick={toggleNodeForm}>
-              <BsPlusCircle />
-            </button>
-            <NewNodeDrawButton addNode={addNode}/>
-            <button
-              type="button"
-              className="btn btn-primary ml-1"
-              disabled={state.nodes.length === 0}
-              onClick={handleSearch}
-            >
-              <BsFillPlayFill />
-            </button>
-            <Button type="primary">Hello</Button>
+          <div>
+            <div className="main-buttons">
+              <Title style={{margin: 0}} level={3}>SIERRA</Title>
+              <InfoCircleOutlined
+                onClick={() => setShowHelp(!showHelp)}
+                style={{
+                  fontSize: '16px',
+                  margin: '1px 14px 0px 6px'
+                }}
+              />
+              <NewNodeDrawButton addNode={addNode}/>
+              <Button
+                style={{
+                  // fontSize: 13,
+                  // height:30,
+                  width: 120,
+                  borderRadius: 4,
+                  marginLeft: 'auto'
+                }}
+                type="primary"
+                disabled={state.nodes.length === 0}
+                onClick={handleSearch}
+              >
+                Play
+              </Button>
+            </div>
+            {showHelp ? <Help hide={() => setShowHelp(false)} /> : null}
           </div>
 
-          <button type="button" onClick={() => setShowHelp(!showHelp)} className="help-button btn btn-outline-secondary">
-            <BsFillInfoCircleFill />
-          </button>
-
-          {showHelp ? <Help hide={() => setShowHelp(false)} /> : null}
-
+          <CypherTextEditor/>
           <ReactFlow
             elements={state.nodes.concat(state.edges)}
-            style={{ marginTop: '5rem', width: '100%', height: '700px' }}
+            style={{ width: '100%', height: '100vh' }}
             nodeTypes={{ special: Node }}
             edgeTypes={{ custom: CustomEdge }}
             onElementsRemove={(elementsToRemove) =>
@@ -208,7 +219,12 @@ function App() {
             }
             onConnect={onConnect}
           >
-            <Controls />
+            <Controls className='controls-custom' />
+            <Background
+              style={{backgroundColor: '#ECEFF2'}}
+              variant="dots"
+              color="#343330"
+            />
           </ReactFlow>
 
           {toastInfo.show ? (
@@ -228,13 +244,13 @@ function App() {
   }
   return (
     <div className="App" id="app-root">
-      <img src={logo} style={
+      {/* <img src={logo} style={
         {
           position: 'fixed',
           top: '0',
           right:'3rem',
           width: '15rem'
-        }}/>
+        }}/> */}
       {renderContent()}
     </div>
   );

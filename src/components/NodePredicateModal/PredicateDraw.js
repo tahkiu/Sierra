@@ -16,7 +16,6 @@ const PredicateSelectorCard = ({
   index,
   predVal,
 }) => {
-  const [form] = Form.useForm()
   return (
     <Card
       style={{marginBottom: 8}}
@@ -31,8 +30,6 @@ const PredicateSelectorCard = ({
           }}
           icon={<DeleteOutlined />} />
       }>
-      <Form layout='inline'>
-        <Form.Item >
           <Select
             onSelect={(val) => {
               handleChange(index, 0, val)
@@ -59,12 +56,11 @@ const PredicateSelectorCard = ({
               </>
             )}
           </Select>
-        </Form.Item>
-        <Form.Item>
           <Select
             onSelect={(val) => {
               handleChange(index, 1, val)
             }}
+            virtual={true}
             value={predVal.value}
             style={{width: 210}}
             size="small"
@@ -78,9 +74,7 @@ const PredicateSelectorCard = ({
             {options.map((v) => {
               return(<Option key={v} value={v} >{v}</Option>)
             })}
-  </Select>
-        </Form.Item>
-      </Form>
+          </Select>
     </Card>
   )
 }
@@ -99,6 +93,7 @@ export default function({
   const [options, setOptions] = useState([]);
   const [predicate, setPredicate] = useState(JSON.parse(JSON.stringify(oldPredicate)));
 
+  //* Runs only once, preparing options for select dropdown
   useEffect(() => {
     var isIntCpy = false;
     var optArr = propValues
@@ -112,25 +107,26 @@ export default function({
         }
       });
     // sort list of options alphabetically or numerically depending on data type.
-    if (isIntCpy){
-      optArr = optArr.sort(function(a, b) {
-        return a - b;
-      });
-    }
-    else {
-      optArr = optArr.sort();
-    }
+    // if (isIntCpy){
+    //   optArr = optArr.sort(function(a, b) {
+    //     return a - b;
+    //   });
+    // }
+    // else {
+    //   optArr = optArr.sort();
+    // }
+    console.log('running this')
     const distinctOpts = [...new Set(optArr)];
     setOptions(distinctOpts);
-    // console.log('pred', predicate)
-    // console.log('isInt', isIntCpy)
   }, []);
 
+  //* Run updatePredicate for parent everytime predicates change
   useEffect(() => {
     updatePredicate(predicate)
     console.log('updating in predicate draw')
   },[predicate])
 
+  //TODO: (may remove) Functions for handling internal state
   const handleChange = (index, label, newVal) => {
     var preds = [...predicate.preds];
     preds[index][label] = newVal;

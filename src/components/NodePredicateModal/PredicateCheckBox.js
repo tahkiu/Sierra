@@ -4,7 +4,6 @@ import './predicateCheckBox.css';
 
 const {Text} = Typography
 const PredicateCheckBox = ({checked, title, palette, onAddPredicate, onDeletePredicate}) => {
-  // const [checked, setChecked] = useState(false)
   return (
     <div
       style={{
@@ -17,7 +16,6 @@ const PredicateCheckBox = ({checked, title, palette, onAddPredicate, onDeletePre
         } else {
           onAddPredicate()
         }
-        // setChecked(!checked)
       }}
       className="predicate-container">
       <Checkbox

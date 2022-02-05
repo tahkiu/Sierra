@@ -1,5 +1,6 @@
 import { Drawer, Button, Tag, Divider, Typography } from 'antd';
 import React, {useState, useContext} from 'react';
+import { addEdge } from 'react-flow-renderer';
 import PredicateCheckBox from './PredicateCheckBox'
 import { PRED_COLOR_V2 } from '../../constants';
 import { Context } from '../../Store';
@@ -21,14 +22,6 @@ const NodePredicateModal = ({
   currPos,
   propData,
 }) => {
-  // console.log(
-  // 'node', node,
-  // 'nodeId', nodeId,
-  // 'targets', targets,
-  // 'attributes', attributes,
-  // 'predicates', predicates,
-  // 'propData', propData,
-  // )
   const [childrenDrawer, setChildDrawer] = useState({});
   const [state, dispatch] = useContext(Context);
 
@@ -46,6 +39,64 @@ const NodePredicateModal = ({
     })
   };
 
+  //* Add Target node (new)
+  const addTarget = (destNode) => {
+    // set connected of existing node to true
+    dispatch({
+      type: 'MODIFY_NODE_DATA',
+      payload: { node: nodeId, prop: 'connected', newVal: true }
+    });
+    // add new node
+    const getId = () => {
+      if (!state.nodes.length) {
+        return '1';
+      } else return `${parseInt(state.nodes[state.nodes.length - 1].id) + 1}`;
+    };
+
+    var possibleNeighbours = state.neighbours[destNode].map(function (rs) {
+      return rs.label;
+    });
+
+    const destId = getId();
+    // remove duplicates
+    possibleNeighbours = [...new Set(possibleNeighbours)];
+    dispatch({
+      type: 'SET_NODES',
+      payload: [
+        ...state.nodes,
+        {
+          id: destId,
+          data: {
+            label: destNode,
+            attributes: state.props[destNode],
+            possibleTargets: possibleNeighbours,
+            connected: true,
+          },
+          position: { x: currPos[0] + 200, y: currPos[1] },
+          type: 'special',
+        },
+      ],
+    });
+
+    // add new edge
+    var newParams = { source: nodeId, target: destId };
+    newParams.type = 'custom';
+    newParams.arrowHeadType = 'arrowclosed';
+    newParams.data = {
+      source: node,
+      destination: destNode,
+      rs: '',
+      relationships: [...state.neighbours[node]].filter(function (rs) {
+        return rs.label === destNode;
+      }),
+      predicates: {}
+    };
+    dispatch({
+      type: 'SET_EDGES',
+      payload: addEdge(newParams, state.edges),
+    });
+  };
+
   return (
       <Drawer
         title={<Title style={{marginBottom: 0}}level={3}>{node}</Title>}
@@ -60,7 +111,7 @@ const NodePredicateModal = ({
           {Object.keys(predicates).map((attr, i) => {
             const colour = PRED_COLOR_V2[attributes.indexOf(attr) % PRED_COLOR_V2.length]
             return (
-              <>
+              <div key={`pt-${i}`}>
                 <Tag
                   className='predicate-tag'
                   onClick={() => {showChildrenDrawer(attr)}}
@@ -81,7 +132,7 @@ const NodePredicateModal = ({
                   }
                   titleColor={colour.secondary}
                   visible={childrenDrawer[attr]}/>
-              </>
+              </div>
             )
           })}
         </div>
@@ -111,7 +162,21 @@ const NodePredicateModal = ({
 
         </div>
         <Divider orientation="left">Possible Targets</Divider>
-
+        {
+          targets.map((target, i) => {
+            return (
+              <Button
+                style={{marginRight: 8}}
+                key={`${i}`}
+                onClick={() => {
+                  addTarget(target)
+                  onClose()
+                }} type="text">
+                {target}
+              </Button>
+            )
+          })
+        }
 
       </Drawer>
   );

@@ -3,7 +3,7 @@ import './index.css';
 import { Drawer, Button, Collapse, Typography } from 'antd';
 import { useContext } from 'react';
 import { Context } from '../../Store'
-import { CaretRightOutlined } from '@ant-design/icons';
+import { CaretRightOutlined, PlusOutlined } from '@ant-design/icons';
 
 const {Panel} = Collapse;
 const {Title, Text} = Typography;
@@ -22,8 +22,15 @@ const NewNodeDrawButton = ({addNode}) => {
 
   return (
     <>
-      <Button type="primary" onClick={showDrawer}>
-        Add Node
+      <Button
+        style={{
+          fontSize: 13,
+          height:30,
+          borderRadius: 4
+        }}
+        type="primary"
+        onClick={showDrawer}>
+        New Node
       </Button>
       <Drawer
         closeIcon={null}
@@ -39,6 +46,7 @@ const NewNodeDrawButton = ({addNode}) => {
             expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
             className="site-collapse-custom-collapse"
           >
+
             {
             entities.map((node, i) => {
               return (
@@ -50,19 +58,22 @@ const NewNodeDrawButton = ({addNode}) => {
                     <div onClick={e => e.stopPropagation()}>
                       <Button
                         size="small"
+                        shape='circle'
+                        icon={<PlusOutlined />}
                         onClick={
                           () => {
                             addNode(node)
                             onClose()
-                            }}>
-                        Add
-                      </Button>
+                            }
+                          }
+                      />
+
                     </div>}
                   >
                   {<ul className='a'>
                     {props[node].map((p, i) => {
                       return (
-                      <li>
+                      <li key={`${i}`}>
                         <Text>{p}</Text>
                       </li>)
                     })}
