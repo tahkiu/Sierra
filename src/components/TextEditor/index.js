@@ -35,7 +35,8 @@ export default function({text}){
             possibleTargets: possibleNeighbours,
             connected: n.connected,
             predicates: n.predicates ? n.predicates : {},
-            rep: key
+            rep: key,
+            VEDAPosition: Object.keys(n.predicates ?? {})
           },
           position: {x: 500, y: 200},
           type: 'special'

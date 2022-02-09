@@ -10,14 +10,16 @@ import NodePredicateModal from './NodePredicateModal'
 const api = require('../neo4jApi');
 
 function Node(props) {
-  const [predicates, setPredicates] = useState(props.data.predicates ?? {});
+  // const [predicates, setPredicates] = useState(props.data.predicates ?? {});
   const [showDetails, setShowDetails] = useState(false);
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
+  const predicates = props.data.predicates ?? {};
+  const VEDAPosition = props.data.VEDAPosition;
 
   // for VEDA
   const [ranTheta] = useState(Math.random() * 2 * Math.PI)
-  const [VEDAposition, setVEDAPosition] = useState(Object.keys(props.data.predicates ?? {}))
+  // const [VEDAposition, setVEDAPosition] = useState(Object.keys(props.data.predicates ?? {}))
 
   //! fix me
   // useEffect(() => {
@@ -30,19 +32,26 @@ function Node(props) {
     setPropData(propValues);
   }, []);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'predicates', newVal: predicates } });
+  // }, predicates);
+
+  const _internalDispatchVEDAPosition = (val) => {
+    dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'VEDAPosition', newVal: val } });
+  }
+  const _internalDispatchPredicates = (predicates) => {
     dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'predicates', newVal: predicates } });
-  }, predicates);
+  }
 
   var theta = {};
   var n = Object.keys(predicates).length;
   let i = 0
-  for (const pre of VEDAposition) {
-    let angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
+  for (const pre of VEDAPosition) {
+    let angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
       const checkAngle = angle % (Math.PI / 2)
       if ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
         i++;
-        angle = ranTheta + ((2 * i * Math.PI) / (VEDAposition.length + 4))
+        angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
     }
     if (pre !== '') {
       theta[pre] = angle
@@ -64,35 +73,35 @@ function Node(props) {
   }
 
   const addPredicate = (attr) => {
-    setPredicates({ ...predicates, [attr]: [['0', '']] });
-    for (const [index, pos] of VEDAposition.entries()) {
+    _internalDispatchPredicates({ ...predicates, [attr]: [['0', '']] });
+    for (const [index, pos] of VEDAPosition.entries()) {
       if (pos === ''){
-        const newPos = [...VEDAposition]
+        const newPos = [...VEDAPosition]
         newPos[index] = attr
-        setVEDAPosition(newPos)
+        _internalDispatchVEDAPosition(newPos)
         return
       }
     }
-    setVEDAPosition([...VEDAposition, attr])
+    _internalDispatchVEDAPosition([...VEDAPosition, attr])
 
   };
 
   const updatePredicate = (newPred) => {
     //newPred: {attr: 'color', preds: [[0,1],[0,2]]
     console.log('updating predicates', newPred)
-    setPredicates({ ...predicates, [newPred.attr]: newPred.preds });
+    _internalDispatchPredicates({ ...predicates, [newPred.attr]: newPred.preds });
   };
 
   const deletePredicate = (attr) => {
     var preds = JSON.parse(JSON.stringify(predicates));
     delete preds[attr];
-    const i = VEDAposition.indexOf(attr)
+    const i = VEDAPosition.indexOf(attr)
     if (i != -1){
-      const newPos = [...VEDAposition]
+      const newPos = [...VEDAPosition]
       newPos[i] = ''
-      setVEDAPosition(newPos)
+      _internalDispatchVEDAPosition(newPos)
     }
-    setPredicates(preds);
+    _internalDispatchPredicates(preds);
   };
 
   return (
@@ -215,6 +224,7 @@ function Modal({ node, nodeId, targets, attributes, predicates, isOpen, hide, ad
             possibleTargets: possibleNeighbours,
             connected: true,
             predicates: {},
+            VEDAPosition: [],
           },
           position: { x: currPos[0] + 200, y: currPos[1] },
           type: 'special',

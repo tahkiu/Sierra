@@ -71,6 +71,8 @@ const NodePredicateModal = ({
             attributes: state.props[destNode],
             possibleTargets: possibleNeighbours,
             connected: true,
+            predicates: {},
+            VEDAPosition: [],
           },
           position: { x: currPos[0] + 200, y: currPos[1] },
           type: 'special',

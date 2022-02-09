@@ -171,6 +171,7 @@ function App() {
             possibleTargets: possibleNeighbours,
             connected: false,
             predicates: {},
+            VEDAPosition: [],
           },
           position: { x: 500, y: 200 },
           type: 'special',
