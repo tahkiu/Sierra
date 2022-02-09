@@ -30,12 +30,23 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [toastInfo, setToastInfo] = useState({ show: false, msg: '', confirm: function () {} });
 
+  const [cypherQuery, setCypherQuery] = useState('')
   // run query using neo4j API and display results
   const handleSearch = async () => {
     const res = await api.runQuery(state);
     setSearchResult(res);
     setShowResults(true);
   };
+
+  useEffect(() => {
+    console.log('FROM APP: state change')
+    if(state.nodes && state.nodes.length > 0){
+      const cypherString = api.convertToQuery(state)
+      console.log('FROM APP:', cypherString)
+      setCypherQuery(cypherString)
+    }
+
+  }, [state])
 
   useEffect(() => {
     fetchData().then((res) => {
@@ -46,7 +57,7 @@ function App() {
     async function fetchData() {
       let result = await api.setUp();
       let props = await api.getProperties(result.entities);
-      console.log('fetched', props)
+      // console.log('fetched', props)
       return { entities: result.entities, neighbours: result.neighbours, props: props };
     }
   }, []);
@@ -140,8 +151,8 @@ function App() {
   const addNode = (nodeName) => {
     const getId = () => {
       if (!state.nodes.length) {
-        return '1';
-      } else return `${parseInt(state.nodes[state.nodes.length - 1].id) + 1}`;
+        return '0';
+      } else return `${state.nodes.length}`;
     };
     var possibleNeighbours = state.neighbours[nodeName].map(function (rs) {
       return rs.label;
@@ -204,7 +215,7 @@ function App() {
             {showHelp ? <Help hide={() => setShowHelp(false)} /> : null}
           </div>
 
-          <CypherTextEditor/>
+          <CypherTextEditor text={cypherQuery}/>
           <ReactFlow
             elements={state.nodes.concat(state.edges)}
             style={{ width: '100%', height: '100vh' }}

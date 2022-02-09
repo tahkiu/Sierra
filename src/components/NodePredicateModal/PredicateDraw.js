@@ -115,7 +115,6 @@ export default function({
     // else {
     //   optArr = optArr.sort();
     // }
-    console.log('running this')
     const distinctOpts = [...new Set(optArr)];
     setOptions(distinctOpts);
   }, []);

@@ -49,8 +49,8 @@ const NodePredicateModal = ({
     // add new node
     const getId = () => {
       if (!state.nodes.length) {
-        return '1';
-      } else return `${parseInt(state.nodes[state.nodes.length - 1].id) + 1}`;
+        return '0';
+      } else return `${parseInt(state.nodes.length)}`;
     };
 
     var possibleNeighbours = state.neighbours[destNode].map(function (rs) {

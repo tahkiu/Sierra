@@ -10,14 +10,30 @@ import NodePredicateModal from './NodePredicateModal'
 const api = require('../neo4jApi');
 
 function Node(props) {
-  const [predicates, setPredicates] = useState({});
+  const [predicates, setPredicates] = useState(props.data.predicates ?? {});
   const [showDetails, setShowDetails] = useState(false);
   const [state, dispatch] = useContext(Context);
-  const [propData, setPropData] = useState();
+  const [propData, setPropData] = useState([]);
 
   // for VEDA
   const [ranTheta] = useState(Math.random() * 2 * Math.PI)
-  const [VEDAposition, setVEDAPosition] = useState([])
+  const [VEDAposition, setVEDAPosition] = useState(Object.keys(props.data.predicates ?? {}))
+
+  //! fix me
+  // useEffect(() => {
+  //   setPredicates(props.data.predicates ?? {})
+  //   setVEDAPosition(Object.keys(props.data.predicates ?? {}))
+  // }, props.data.predicates)
+
+  useEffect(async () => {
+    const propValues = await api.fetchPropertyValues(props.data.label);
+    setPropData(propValues);
+  }, []);
+
+  useEffect(() => {
+    dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'predicates', newVal: predicates } });
+  }, predicates);
+
   var theta = {};
   var n = Object.keys(predicates).length;
   let i = 0
@@ -46,24 +62,6 @@ function Node(props) {
     return (mouseX < mousePos.current.x + 3 && mouseX > mousePos.current.x - 3)
       && (mouseY < mousePos.current.y + 3 && mouseY > mousePos.current.y - 3)
   }
-
-
-  useEffect(async () => {
-    const propValues = await api.fetchPropertyValues(props.data.label);
-    setPropData(propValues);
-  }, []);
-
-
-  const [predsIsOpen, setPredsIsOpen] = useState([]);
-  useEffect(() => {
-    var arr = [];
-    for (var i = 0; i < n; i++) {
-      arr.push(false);
-    }
-    setPredsIsOpen(arr);
-    // default open latest added attribute for editing
-    togglePredIsOpen(n-1);
-  }, [n]);
 
   const addPredicate = (attr) => {
     setPredicates({ ...predicates, [attr]: [['0', '']] });
@@ -97,22 +95,12 @@ function Node(props) {
     setPredicates(preds);
   };
 
-  useEffect(() => {
-    dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'predicates', newVal: predicates } });
-  }, predicates);
-
-  const togglePredIsOpen = (index) => {
-    var arr = [...predsIsOpen];
-    arr[index] = !arr[index];
-    setPredsIsOpen(arr);
-  };
-
   return (
     <div
       id={'node-' + props.data.label}
       className="node"
       style={{
-        background: Constants.COLORS[(props.id - 1) % Constants.COLORS.length],
+        background: Constants.COLORS[(props.id) % Constants.COLORS.length],
         // size of node depends on number of properties present
         height: `${80 + Object.keys(predicates).length * 10}px`,
         width: `${80 + Object.keys(predicates).length * 10}px`,
@@ -121,7 +109,11 @@ function Node(props) {
       <Handle type="target" position="left" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
       <Handle type="source" position="right" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
 
-      {Object.keys(predicates).map((attr, index) => (
+      {Object.keys(predicates).map((attr, index) => {
+        console.log(`IN NODE: , ${props.data.label}`)
+        console.log(`IN NODE: , ${attr} predicate`)
+        console.log('colour', props.data.attributes.indexOf(attr) % Constants.PRED_COLOR_V2.length)
+        return (
         <Predicate
           key={attr}
           index={index}
@@ -138,7 +130,7 @@ function Node(props) {
               return item[attr];
             })}
         />
-      ))}
+      )})}
 
       <div style={{ position: 'relative', top: '50%', transform: 'translateY(-50%)' }}>
         <p className="h6"

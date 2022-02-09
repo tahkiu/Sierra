@@ -107,32 +107,41 @@ async function getResult(queryString) {
   return result;
 }
 
-// get query string based on query graph and execute it
-async function runQuery(state) {
+const convertToQuery = (state) => {
+  console.log('INSIDE CONVERTOQUERY:')
+  console.log(state)
   var loneNodeQueries = [];
   var returnVars = [];
   var allPredsArr = [];
   for (var i = 0; i < state.nodes.length; i++) {
     var curNode = state.nodes[i];
-    curNode.data['rep'] = (parseInt(curNode.id) + 9).toString(36);
-    returnVars.push(curNode.data.rep);
+    if(curNode.data['rep']) {
+      returnVars.push(curNode.data.rep);
+    } else {
+      curNode.data['rep'] = (parseInt(curNode.id) + 10).toString(36);
+      returnVars.push(curNode.data.rep);
+    }
 
     if (!curNode.data.connected) {
       loneNodeQueries.push(`(${curNode.data.rep}:${curNode.data.label})`);
     }
 
-    //process predicates
-    var nodePredsArr = Object.keys(curNode.data.predicates).map(function (attr) {
-      const preds = curNode.data.predicates[attr];
-      var predsStringsArr = preds.map(function (pred) {
-        const op = pred[0];
-        const predVal = typeof pred[1] === 'string' ? `'${pred[1]}'` : pred[1];
-        return `${curNode.data.rep}.${attr} ${Constants.OPERATORS[op]} ${predVal}`;
-      });
-      var predsQueryString = predsStringsArr.join(' AND ');
+    //TODO: fails when node has no predicate (process predicates)
+    let nodePredsArr = ''
+    if (curNode.data.predicates) {
+      nodePredsArr = Object.keys(curNode.data.predicates).map(function (attr) {
+        const preds = curNode.data.predicates[attr];
+        var predsStringsArr = preds.map(function (pred) {
+          const op = pred[0];
+          const predVal = typeof pred[1] === 'string' ? `'${pred[1]}'` : pred[1];
+          return `${curNode.data.rep}.${attr} ${Constants.OPERATORS[op]} ${predVal}`;
+        });
+        var predsQueryString = predsStringsArr.join(' AND ');
 
-      return predsQueryString;
-    });
+        return predsQueryString;
+      });
+    }
+
     allPredsArr = allPredsArr.concat(nodePredsArr);
   }
 
@@ -175,7 +184,7 @@ async function runQuery(state) {
     allRsQueries.push(qString);
   }
 
-  var allPredsQueryString = allPredsArr.length > 0 ? ' WHERE ' + allPredsArr.join(' AND ') : '';
+  var allPredsQueryString = allPredsArr.length > 0 ? 'WHERE ' + allPredsArr.join(' AND ') : '';
 
   var loneQueryString = '';
   if (loneNodeQueries.length > 0 && allRsQueries.length > 0) {
@@ -188,10 +197,19 @@ async function runQuery(state) {
 
   var allRsQueriesString = allRsQueries.join(', ');
 
-  const finalQuery =
-    'MATCH ' + loneQueryString + allRsQueriesString + allPredsQueryString + ' RETURN ' + returnVars.join(', ');
-  console.log(finalQuery);
-  const result = await getResult(finalQuery);
+  return allPredsQueryString ?
+    `MATCH ${loneQueryString}${allRsQueriesString}
+${allPredsQueryString}
+RETURN ${returnVars.join(', ')}` :
+
+    `MATCH ${loneQueryString}${allRsQueriesString}
+${allPredsQueryString}`
+
+
+}
+// get query string based on query graph and execute it
+async function runQuery(query) {
+  const result = await getResult(query);
   return { result: result, query: finalQuery };
 }
 
@@ -244,3 +262,4 @@ exports.setUp = setUp;
 exports.runQuery = runQuery;
 exports.fetchPropertyValues = fetchPropertyValues;
 exports.fetchEdgePropertyValues = fetchEdgePropertyValues;
+exports.convertToQuery = convertToQuery;
