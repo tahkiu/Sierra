@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import { Button, Typography } from 'antd';
+import { Button, Typography, message } from 'antd';
 import {CopyOutlined} from '@ant-design/icons'
 import CodeMirror from "@uiw/react-codemirror";
 import { StreamLanguage } from "@codemirror/stream-parser";
@@ -8,6 +8,7 @@ import { convertToGraph } from '../../utils/converToGraph';
 import { Context } from '../../Store';
 import { addEdge } from 'react-flow-renderer';
 import './index.css';
+import { resetCurAvailId, undoResetNodeId } from '../../utils/getNodeId';
 
 const { Title } = Typography
 
@@ -16,6 +17,7 @@ export default function({text}){
   const [innerText, setInnerText] = useState(text)
   const handleSearch = () => {
     try {
+      resetCurAvailId()
       let {nodes: midNodes, edges: midEdges} = convertToGraph(innerText, state)
       let nodes = []
       for (const [key, n] of Object.entries(midNodes)) {
@@ -75,6 +77,8 @@ export default function({text}){
       })
 
     } catch (e){
+      undoResetNodeId()
+      message.error(`Query unsupported by sierra, error message: ${e}` )
       throw ('error', e)
     }
   }

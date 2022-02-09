@@ -6,6 +6,7 @@ import { PRED_COLOR_V2 } from '../../constants';
 import { Context } from '../../Store';
 import './index.css'
 import PredicateDraw from './PredicateDraw';
+import { getNodeId } from '../../utils/getNodeId';
 const {Title} = Typography
 
 const NodePredicateModal = ({
@@ -47,17 +48,17 @@ const NodePredicateModal = ({
       payload: { node: nodeId, prop: 'connected', newVal: true }
     });
     // add new node
-    const getId = () => {
-      if (!state.nodes.length) {
-        return '0';
-      } else return `${parseInt(state.nodes.length)}`;
-    };
+    // const getNodeId = () => {
+    //   if (!state.nodes.length) {
+    //     return '0';
+    //   } else return `${parseInt(state.nodes.length)}`;
+    // };
 
     var possibleNeighbours = state.neighbours[destNode].map(function (rs) {
       return rs.label;
     });
 
-    const destId = getId();
+    const destId = getNodeId();
     // remove duplicates
     possibleNeighbours = [...new Set(possibleNeighbours)];
     dispatch({

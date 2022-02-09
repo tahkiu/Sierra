@@ -14,6 +14,7 @@ import logo from './assets/images/logo.png';
 import {Button} from 'antd';
 import {InfoCircleOutlined, CopyOutlined} from '@ant-design/icons'
 import Title from 'antd/lib/typography/Title';
+import { getNodeId } from './utils/getNodeId';
 
 const api = require('./neo4jApi');
 
@@ -149,11 +150,12 @@ function App() {
   };
 
   const addNode = (nodeName) => {
-    const getId = () => {
-      if (!state.nodes.length) {
-        return '0';
-      } else return `${state.nodes.length}`;
-    };
+    // const getId = () => {
+    //   if (!state.nodes.length) {
+    //     return '0';
+    //   } else return `${state.nodes.length}`;
+    // };
+
     var possibleNeighbours = state.neighbours[nodeName].map(function (rs) {
       return rs.label;
     });
@@ -164,7 +166,7 @@ function App() {
       payload: [
         ...state.nodes,
         {
-          id: getId(),
+          id: getNodeId(),
           data: {
             label: nodeName,
             attributes: state.props[nodeName],

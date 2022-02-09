@@ -1,3 +1,5 @@
+import { getNodeId } from "./getNodeId";
+
 const processMatchSubquery = (s, midState, repToElementMap, state) => {
   //* split into nodes and edges, identify rep
   const queries = s.split(',').map(s => s.trim())
@@ -29,7 +31,7 @@ const processMatchSubquery = (s, midState, repToElementMap, state) => {
         const key = r[0]
         if (!midState.nodes[key]) {
             midState.nodes[key] = {
-                nodeId: `${Object.keys(midState.nodes).length}`,
+                nodeId: getNodeId(),
                 label: r[1],
                 connected: false
             }

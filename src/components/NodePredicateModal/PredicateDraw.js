@@ -16,6 +16,7 @@ const PredicateSelectorCard = ({
   index,
   predVal,
 }) => {
+  console.log('pv:', predVal)
   return (
     <Card
       style={{marginBottom: 8}}
@@ -32,9 +33,10 @@ const PredicateSelectorCard = ({
       }>
           <Select
             onSelect={(val) => {
-              handleChange(index, 0, val)
+              handleChange(index, 0, val.value)
             }}
-            value={predVal.op}
+            labelInValue
+            value={{value:`${predVal.op}` ?? "0"}}
             placeholder="Op"
             style={{width: 59}}
             size="small"
@@ -61,7 +63,7 @@ const PredicateSelectorCard = ({
               handleChange(index, 1, val)
             }}
             virtual={true}
-            value={predVal.value}
+            value={{value: predVal.value}}
             style={{width: 210}}
             size="small"
             showSearch
@@ -91,8 +93,8 @@ export default function({
 }){
   const [isInt, setIsInt] = useState(false);
   const [options, setOptions] = useState([]);
-  const [predicate, setPredicate] = useState(JSON.parse(JSON.stringify(oldPredicate)));
-
+  // const [predicate, setPredicate] = useState(JSON.parse(JSON.stringify(oldPredicate)));
+  const predicate = JSON.parse(JSON.stringify(oldPredicate))
   //* Runs only once, preparing options for select dropdown
   useEffect(() => {
     var isIntCpy = false;
@@ -120,28 +122,28 @@ export default function({
   }, []);
 
   //* Run updatePredicate for parent everytime predicates change
-  useEffect(() => {
-    updatePredicate(predicate)
-    console.log('updating in predicate draw')
-  },[predicate])
+  // useEffect(() => {
+  //   updatePredicate(predicate)
+  //   console.log('updating in predicate draw')
+  // },[predicate])
 
   //TODO: (may remove) Functions for handling internal state
   const handleChange = (index, label, newVal) => {
     var preds = [...predicate.preds];
     preds[index][label] = newVal;
-    setPredicate({ ...predicate, preds: preds });
+    updatePredicate({ ...predicate, preds: preds });
   };
 
   const addPredicate = () => {
     var preds = [...predicate.preds];
     preds.push(['0', '']);
-    setPredicate({ ...predicate, preds: preds });
+    updatePredicate({ ...predicate, preds: preds });
   };
 
   const removePredicate = (i) => {
     var preds = [...predicate.preds];
     preds.splice(i, 1);
-    setPredicate({ ...predicate, preds: preds });
+    updatePredicate({ ...predicate, preds: preds });
     if(preds.length == 0){
       deletePredicate(attr)
       onClose()
