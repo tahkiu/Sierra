@@ -109,7 +109,7 @@ async function getResult(queryString) {
 
 const convertToQuery = (state) => {
   console.log('INSIDE CONVERTOQUERY:')
-  console.log(state)
+  // console.log(state)
   var loneNodeQueries = [];
   var returnVars = [];
   var allPredsArr = [];

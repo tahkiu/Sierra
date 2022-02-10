@@ -88,7 +88,7 @@ function Node(props) {
 
   const updatePredicate = (newPred) => {
     //newPred: {attr: 'color', preds: [[0,1],[0,2]]
-    console.log('updating predicates', newPred)
+    // console.log('updating predicates', newPred)
     _internalDispatchPredicates({ ...predicates, [newPred.attr]: newPred.preds });
   };
 
@@ -119,9 +119,9 @@ function Node(props) {
       <Handle type="source" position="right" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
 
       {Object.keys(predicates).map((attr, index) => {
-        console.log(`IN NODE: , ${props.data.label}`)
-        console.log(`IN NODE: , ${attr} predicate`)
-        console.log('colour', props.data.attributes.indexOf(attr) % Constants.PRED_COLOR_V2.length)
+        // console.log(`IN NODE: , ${props.data.label}`)
+        // console.log(`IN NODE: , ${attr} predicate`)
+        // console.log('colour', props.data.attributes.indexOf(attr) % Constants.PRED_COLOR_V2.length)
         return (
         <Predicate
           key={attr}

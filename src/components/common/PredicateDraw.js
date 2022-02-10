@@ -5,7 +5,7 @@ import { cssNumber } from 'jquery';
 
 const neo4j = require('neo4j-driver');
 
-const {Title} = Typography
+const {Title, Text} = Typography
 const {Option} = Select;
 
 const PredicateSelectorCard = ({
@@ -16,7 +16,7 @@ const PredicateSelectorCard = ({
   index,
   predVal,
 }) => {
-  console.log('pv:', predVal)
+  // console.log('pv:', predVal)
   return (
     <Card
       style={{marginBottom: 8}}
@@ -31,52 +31,61 @@ const PredicateSelectorCard = ({
           }}
           icon={<DeleteOutlined />} />
       }>
-          <Select
-            onSelect={(val) => {
-              handleChange(index, 0, val.value)
-            }}
-            labelInValue
-            value={{value:`${predVal.op}` ?? "0"}}
-            placeholder="Op"
-            style={{width: 59}}
-            size="small"
-          >
-            {isInt ? (
-              <>
-                <Option value="0">=</Option>
-                <Option value="1">&gt;</Option>
-                <Option value="2">&gt;=</Option>
-                <Option value="3">&lt;</Option>
-                <Option value="4">&lt;=</Option>
-                <Option value="5">&lt;&gt;</Option>
-              </>
+          <div style={{display: 'flex', flexDirection: 'column'}}>
+            <div>
+              <Text style={{marginRight: 55, marginLeft: 4}}>Op</Text>
+              <Text>Value</Text>
+            </div>
+            <div>
+              <Select
+                onSelect={(val) => {
+                  handleChange(index, 0, val.value)
+                }}
+                labelInValue
+                value={{value:`${predVal.op}` ?? "0"}}
+                placeholder="Op"
+                style={{width: 59, marginRight: 16}}
+                size="small"
+              >
+                {isInt ? (
+                  <>
+                    <Option value="0">=</Option>
+                    <Option value="1">&gt;</Option>
+                    <Option value="2">&gt;=</Option>
+                    <Option value="3">&lt;</Option>
+                    <Option value="4">&lt;=</Option>
+                    <Option value="5">&lt;&gt;</Option>
+                  </>
 
-            ) : (
-              <>
-              <Option value="0">=</Option>
-              <Option value="5">&lt;&gt;</Option>
-              </>
-            )}
-          </Select>
-          <Select
-            onSelect={(val) => {
-              handleChange(index, 1, val)
-            }}
-            virtual={true}
-            value={{value: predVal.value}}
-            style={{width: 210}}
-            size="small"
-            showSearch
-            placeholder="Value"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            {options.map((v) => {
-              return(<Option key={v} value={v} >{v}</Option>)
-            })}
-          </Select>
+                ) : (
+                  <>
+                  <Option value="0">=</Option>
+                  <Option value="5">&lt;&gt;</Option>
+                  </>
+                )}
+              </Select>
+              <Select
+                onSelect={(val) => {
+                  handleChange(index, 1, val)
+                }}
+                virtual={true}
+                value={{value: predVal.value}}
+                style={{width: 210}}
+                size="small"
+                showSearch
+                placeholder="Value"
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                {options.map((v) => {
+                  return(<Option key={v} value={v} >{v}</Option>)
+                })}
+              </Select>
+            </div>
+          </div>
+
     </Card>
   )
 }

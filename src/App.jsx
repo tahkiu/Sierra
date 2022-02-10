@@ -11,8 +11,8 @@ import { Context } from './Store';
 import CustomEdge from './components/CustomEdge';
 import ConfirmationAlert from './components/ConfirmationAlert';
 import logo from './assets/images/logo.png';
-import {Button} from 'antd';
-import {InfoCircleOutlined, CopyOutlined} from '@ant-design/icons'
+import {Button, Spin} from 'antd';
+import {InfoCircleOutlined, CopyOutlined, LoadingOutlined} from '@ant-design/icons'
 import Title from 'antd/lib/typography/Title';
 import { getNodeId } from './utils/getNodeId';
 
@@ -185,7 +185,10 @@ function App() {
 
   const renderContent = () => {
     if(pageStatus  === "LOADING") {
-      return (<div> Loading ...</div>)
+      return (
+      <div style={{width: '100vw', height: '100vh'}}>
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 42 }} spin />} style={{margin:'35% 50%'}} />
+      </div>)
     } else if (pageStatus === "READY") {
       return (
         <>

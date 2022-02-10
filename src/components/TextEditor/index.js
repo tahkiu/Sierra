@@ -65,8 +65,8 @@ export default function({text}){
         edges = addEdge(newParams, edges)
       }
 
-      console.log('FROM TEXTEDITOR, NEW EDGES: ',edges)
-      console.log('FROM TEXTEDITOR, NEW NODES:', nodes)
+      // console.log('FROM TEXTEDITOR, NEW EDGES: ',edges)
+      // console.log('FROM TEXTEDITOR, NEW NODES:', nodes)
       dispatch({
         type: 'SET_NODES',
         payload: nodes,

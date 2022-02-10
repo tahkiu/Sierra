@@ -1,13 +1,12 @@
-import { Drawer, Button, Tag, Divider, Typography } from 'antd';
+import { Drawer, Button, Divider, Typography } from 'antd';
 import React, {useState, useContext} from 'react';
 import { addEdge } from 'react-flow-renderer';
-import PredicateCheckBox from './PredicateCheckBox'
 import { PRED_COLOR_V2 } from '../../constants';
 import { Context } from '../../Store';
-import './index.css'
-import PredicateDraw from './PredicateDraw';
+import { PredicateDraw, PredicateCheckBox, SelectTag } from '../common';
 import { getNodeId } from '../../utils/getNodeId';
-const {Title} = Typography
+
+const { Title } = Typography
 
 const NodePredicateModal = ({
   visible,
@@ -47,12 +46,6 @@ const NodePredicateModal = ({
       type: 'MODIFY_NODE_DATA',
       payload: { node: nodeId, prop: 'connected', newVal: true }
     });
-    // add new node
-    // const getNodeId = () => {
-    //   if (!state.nodes.length) {
-    //     return '0';
-    //   } else return `${parseInt(state.nodes.length)}`;
-    // };
 
     var possibleNeighbours = state.neighbours[destNode].map(function (rs) {
       return rs.label;
@@ -115,14 +108,7 @@ const NodePredicateModal = ({
             const colour = PRED_COLOR_V2[attributes.indexOf(attr) % PRED_COLOR_V2.length]
             return (
               <div key={`pt-${i}`}>
-                <Tag
-                  className='predicate-tag'
-                  onClick={() => {showChildrenDrawer(attr)}}
-                  key={`${attr}-k`}
-                  color={colour.name}
-                >
-                  {attr}
-                </Tag>
+                <SelectTag onClick={() => {showChildrenDrawer(attr)}} colour={colour.name} key={`${attr}-k`} text={attr} />
                 <PredicateDraw
                   onClose={() => onChildrenDrawerClose(attr)}
                   attr={attr}
