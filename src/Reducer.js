@@ -1,5 +1,10 @@
 const Reducer = (state, action) => {
   switch (action.type) {
+    case 'SET_PRED_DISPLAY':
+      return {
+        ...state,
+        predDisplayStatus: action.payload
+      };
     case 'SET_DATA':
       console.log('SETTING DATA');
       return {

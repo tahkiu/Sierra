@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Node from './components/Node';
-import ReactFlow, { Controls, isEdge, addEdge, removeElements, Background } from 'react-flow-renderer';
+import ReactFlow, { Controls, isEdge, addEdge, removeElements, Background, useStoreState } from 'react-flow-renderer';
 import NodeForm from './components/NodeForm';
 import NewNodeDrawButton from './components/NewNodeDrawButton';
+import PredicateDisplayDropDown from './components/PredicateDisplayDropDown';
 import CypherTextEditor from './components/TextEditor'
 import Help from './components/Help';
 import { BsFillInfoCircleFill, BsFillPlayFill, BsPlusCircle } from 'react-icons/bs';
@@ -18,13 +19,18 @@ import { getNodeId } from './utils/getNodeId';
 
 const api = require('./neo4jApi');
 
+const NodesDebugger = () => {
+  const nodes = useStoreState((state) => state.nodes);
+  const edges = useStoreState(state => state.edges)
+  console.log(nodes, edges);
+
+  return null;
+}
+
 function App() {
   const [state, dispatch] = useContext(Context);
   const [pageStatus, setPageStatus] = useState('LOADING');
-  const [nodeFormStatus, setShowNodeForm] = useState(false);
-  const toggleNodeForm = () => {
-    setShowNodeForm(!nodeFormStatus);
-  };
+
   const [showResults, setShowResults] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
 
@@ -34,7 +40,7 @@ function App() {
   const [cypherQuery, setCypherQuery] = useState('')
   // run query using neo4j API and display results
   const handleSearch = async () => {
-    const res = await api.runQuery(state);
+    const res = await api.runQuery(cypherQuery);
     setSearchResult(res);
     setShowResults(true);
   };
@@ -62,6 +68,13 @@ function App() {
       return { entities: result.entities, neighbours: result.neighbours, props: props };
     }
   }, []);
+
+  const _internalDispatchPredDisplayStatus = (val) => {
+    dispatch({
+      type: 'SET_PRED_DISPLAY',
+      payload: val
+    })
+  }
 
   const onElementsRemove = (elementsToRemove) => {
     var updatedEdges = removeElements(elementsToRemove, state.edges);
@@ -180,7 +193,6 @@ function App() {
         },
       ],
     });
-    setShowNodeForm(false);
   };
 
   const renderContent = () => {
@@ -203,6 +215,7 @@ function App() {
                 }}
               />
               <NewNodeDrawButton addNode={addNode}/>
+              <PredicateDisplayDropDown value={state.predDisplayStatus} onSelect={_internalDispatchPredDisplayStatus} />
               <Button
                 style={{
                   // fontSize: 13,
@@ -242,6 +255,7 @@ function App() {
               variant="dots"
               color="#343330"
             />
+            {/* <NodesDebugger /> */}
           </ReactFlow>
 
           {toastInfo.show ? (
@@ -253,7 +267,6 @@ function App() {
             />
           ) : null}
 
-          {/* {nodeFormStatus ? <NodeForm addNode={addNode} /> : null} */}
           {showResults ? <SearchResults result={searchResult.result} query={searchResult.query} hide={() => setShowResults(false)} /> : null}
         </>
       )

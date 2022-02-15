@@ -6,7 +6,8 @@ const initialState = {
   edges: [],
   entities: [],
   neighbours: {},
-  props: {}
+  props: {},
+  predDisplayStatus: 'FULL'
 };
 
 const Store = ({ children }) => {

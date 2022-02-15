@@ -210,7 +210,7 @@ ${allPredsQueryString}`
 // get query string based on query graph and execute it
 async function runQuery(query) {
   const result = await getResult(query);
-  return { result: result, query: finalQuery };
+  return { result: result, query: query };
 }
 
 // fetch all key value pairs of properties of a node

@@ -17,7 +17,7 @@ function Predicate(props) {
   };
   // x + R * cos(theta + (i)2pi/kn)
   return (
-      <div style={predicateStyle}></div>
+      <div style={predicateStyle}/>
   );
 }
 

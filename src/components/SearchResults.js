@@ -28,7 +28,7 @@ function SearchResults(props) {
 
   return (
     <div ref={wrapperRef}>
-      <div
+      {/* <div
         className="p-4"
         style={{
           position: 'absolute',
@@ -42,7 +42,7 @@ function SearchResults(props) {
       >
         <h3>Query String</h3>
         {props.query}
-      </div>
+      </div> */}
       <div className="result-modal-center">
         <button type="button" onClick={() => props.hide()} className="ml-2 mb-1 close hide-button">
           &times;

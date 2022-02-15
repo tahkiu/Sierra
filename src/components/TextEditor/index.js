@@ -15,6 +15,13 @@ const { Title } = Typography
 export default function({text}){
   const [state, dispatch] = useContext(Context);
   const [innerText, setInnerText] = useState(text)
+  const onCopy = () => {
+    if(innerText){
+      navigator.clipboard.writeText(innerText).then(() => {
+          message.info('Successfully Copied Query to Clipboard')
+      })
+    }
+  }
   const handleSearch = () => {
     try {
       resetCurAvailId()
@@ -60,13 +67,9 @@ export default function({text}){
           }),
           predicates: e.predicates ? e.predicates : {}
         };
-
-
         edges = addEdge(newParams, edges)
       }
 
-      // console.log('FROM TEXTEDITOR, NEW EDGES: ',edges)
-      // console.log('FROM TEXTEDITOR, NEW NODES:', nodes)
       dispatch({
         type: 'SET_NODES',
         payload: nodes,
@@ -88,7 +91,7 @@ export default function({text}){
       <div style ={{display: 'flex', flexDirection: 'row', justifyContent:'space-between'}}>
         <Title level={5}>Cypher Query</Title>
         <CopyOutlined
-          onClick={() => console.log('copy cypher')}
+          onClick={onCopy}
           style={{
             fontSize: '16px',
             margin: '7px 8px 0px auto'
