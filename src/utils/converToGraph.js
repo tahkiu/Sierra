@@ -79,6 +79,7 @@ const processMatchSubquery = (s, midState, repToElementMap, state) => {
           } else {
               let copy = match[0].slice(2, match[0].length - 3)
               const [edgeRep, rs] = copy.split(":")
+              //! need to check if rs is in the neighbor
               midState.edges[key] = {
                   source,
                   target,
@@ -121,13 +122,36 @@ const processWhereSubquery = (s, midState, repToElementMap, state) => {
 
       //* check if property is in node
       let obj = repToElementMap[rep]
-
       //! need to distinguish between node or edgeå
-      // const label = midState.nodes[rep].label
-      // if(!property in state.props[label]){
-      //   console.log('118')
-      //   throw `no such property in node ${label}`
-      // }
+      const edgesRepSet = new Set()
+      for (let k in midState.edges) {
+        console.log('k', k)
+        if (midState.edges[k].rep){
+          edgesRepSet.add(midState.edges[k].rep)
+        }
+
+      }
+      if (rep in midState.nodes){
+        const label = midState.nodes[rep].label
+        console.log('checking nodes', rep, property, label)
+        console.log(state.props[label])
+
+        if(state.props[label].indexOf(property) === -1){
+          console.log('118')
+          throw `no such property in node ${label}`
+        }
+      } else if (edgesRepSet.has(rep)){
+        const propsList = state.neighbours[obj.dSource].filter(v => {
+          return (v.label === obj.dTarget)
+        })
+        if(propsList.length !== 1 || propsList[0].props.indexOf(property) === -1){
+          throw `incorrect rs between ${obj.dSource} and ${obj.dTarget}`
+        }
+
+      } else {
+        throw `rep ${rep} doesn't match any nodes or edges`
+      }
+
 
       if(!obj.predicates) {
           obj.predicates = {
@@ -174,8 +198,19 @@ export const convertToGraph = (query, state) => {
         // processMidState(midState, state)
       } catch (e) {
         throw e
-      }
+        }
 
-      return midState
+  } else {
+      try {
+        const arr = queryCopy.split("RETURN")
+        if(arr.length !== 2){
+          console.log('187')
+            throw 'Query unsupported by SIERRA';
+        }
+        processMatchSubquery(arr[0].replace("MATCH", "").trim(), midState, repToElementMap, state)
+      } catch (e) {
+        throw e
+      }
   }
+  return midState
 }

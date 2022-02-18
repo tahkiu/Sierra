@@ -8,11 +8,13 @@ import { BsPencilSquare, BsPlusCircle, BsFillEyeFill } from 'react-icons/bs';
 import { addEdge } from 'react-flow-renderer';
 import * as Constants from '../constants';
 import NodePredicateModal from './NodePredicateModal'
+import { set } from 'lodash';
 const api = require('../neo4jApi');
 
 function Node(props) {
   // const [predicates, setPredicates] = useState(props.data.predicates ?? {});
   const [showDetails, setShowDetails] = useState(false);
+  const [theta, setTheta] = useState({})
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
   const predicates = props.data.predicates ?? {};
@@ -33,26 +35,31 @@ function Node(props) {
     dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'predicates', newVal: predicates } });
   }
 
-  var theta = {};
-  var n = Object.keys(predicates).length;
-  let i = 0
+
   // console.log('ranTheata is', ranTheta)
   // console.log('number of cirlces', VEDAPosition.length)
-  for (const pre of VEDAPosition) {
-    let angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
-      let checkAngle = angle % (Math.PI / 2)
-      while ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
-        i++;
-        // console.log('skipped angle', angle)
-        angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
-        checkAngle = angle % (Math.PI / 2)
+  useEffect(() => {
+    var theta = {};
+    var n = Object.keys(predicates).length;
+    let i = 0
+    for (const pre of VEDAPosition) {
+      let angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
+        let checkAngle = angle % (Math.PI / 2)
+        while ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
+          i++;
+          // console.log('skipped angle', angle)
+          angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
+          checkAngle = angle % (Math.PI / 2)
+      }
+      if (pre !== '') {
+        console.log(`${pre} assigned angle ${angle}`)
+        theta[pre] = angle
+      }
+      i++;
     }
-    if (pre !== '') {
-      // console.log(`${pre} assigned angle ${angle}`)
-      theta[pre] = angle
-    }
-    i++;
-  }
+    setTheta(theta)
+  }, [VEDAPosition])
+
 
   //* for distinguishing drag and click
   const mousePos = useRef(null)
