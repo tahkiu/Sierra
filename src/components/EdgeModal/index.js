@@ -103,7 +103,7 @@ const EdgeModal = ({
                       <PredicateDraw
                         onClose={() => onChildrenDrawerClose(attr)}
                         attr={attr}
-                        oldPredicate={{ attr: attr, preds: predicates[attr] }}
+                        oldPredicate={{ attr: attr, preds: predicates[attr].data }}
                         updatePredicate={updatePredicate}
                         deletePredicate={deletePredicate}
                         propValues={propData
@@ -124,7 +124,7 @@ const EdgeModal = ({
                       title={attr}
                       checked={Object.keys(predicates).indexOf(attr) !== -1}
                       onAddPredicate={() => {
-                        addPredicate(attr)
+                        addPredicate(attr, PRED_COLOR_V2[i % PRED_COLOR_V2.length])
                         setChildDrawer({
                           ...childrenDrawer,
                           [attr]:true

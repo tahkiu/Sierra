@@ -130,7 +130,7 @@ const convertToQuery = (state) => {
     let nodePredsArr = ''
     if (curNode.data.predicates) {
       nodePredsArr = Object.keys(curNode.data.predicates).map(function (attr) {
-        const preds = curNode.data.predicates[attr];
+        const preds = curNode.data.predicates[attr].data;
         var predsStringsArr = preds.map(function (pred) {
           const op = pred[0];
           const predVal = typeof pred[1] === 'string' ? `'${pred[1]}'` : pred[1];
@@ -162,7 +162,7 @@ const convertToQuery = (state) => {
         // process edge predicates
         if (Object.keys(currEdge.data.predicates).length > 0){
           var edgePredsArr = Object.keys(currEdge.data.predicates).map(function (attr) {
-            const preds = currEdge.data.predicates[attr];
+            const preds = currEdge.data.predicates[attr].data;
             var predsStringsArr = preds.map(function (pred) {
               const op = pred[0];
               const predVal = typeof pred[1] === 'string' ? `'${pred[1]}'` : pred[1];

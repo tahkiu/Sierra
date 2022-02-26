@@ -102,8 +102,8 @@ export default function({
 }){
   const [isInt, setIsInt] = useState(false);
   const [options, setOptions] = useState([]);
-  // const [predicate, setPredicate] = useState(JSON.parse(JSON.stringify(oldPredicate)));
   const predicate = JSON.parse(JSON.stringify(oldPredicate))
+
   //* Runs only once, preparing options for select dropdown
   useEffect(() => {
     var isIntCpy = false;
@@ -117,47 +117,26 @@ export default function({
           return item;
         }
       });
-    // sort list of options alphabetically or numerically depending on data type.
-    // if (isIntCpy){
-    //   optArr = optArr.sort(function(a, b) {
-    //     return a - b;
-    //   });
-    // }
-    // else {
-    //   optArr = optArr.sort();
-    // }
     const distinctOpts = [...new Set(optArr)];
     setOptions(distinctOpts);
   }, []);
 
-  //* Run updatePredicate for parent everytime predicates change
-  // useEffect(() => {
-  //   updatePredicate(predicate)
-  //   console.log('updating in predicate draw')
-  // },[predicate])
-
-  //TODO: (may remove) Functions for handling internal state
   const handleChange = (index, label, newVal) => {
-    var preds = [...predicate.preds];
-    preds[index][label] = newVal;
-    updatePredicate({ ...predicate, preds: preds });
+    updatePredicate("modify", {index, label, newVal, attr: predicate.attr})
   };
 
   const addPredicate = () => {
-    var preds = [...predicate.preds];
-    preds.push(['0', '']);
-    updatePredicate({ ...predicate, preds: preds });
+    updatePredicate("add", {attr: predicate.attr, vals: ['0', '']})
   };
 
   const removePredicate = (i) => {
-    var preds = [...predicate.preds];
-    preds.splice(i, 1);
-    updatePredicate({ ...predicate, preds: preds });
-    if(preds.length == 0){
-      deletePredicate(attr)
+    if(i === 0 && predicate.preds.length === 1) {
+      updatePredicate("delete", {attr: predicate.attr, index: i, deleteAll: true})
       onClose()
+    } else {
+      updatePredicate("delete", {attr: predicate.attr, index: i, deleteAll: false})
     }
-  };
+  }
 
   return (
     <Drawer

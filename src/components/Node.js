@@ -9,57 +9,22 @@ import { addEdge } from 'react-flow-renderer';
 import * as Constants from '../constants';
 import NodePredicateModal from './NodePredicateModal'
 import { set } from 'lodash';
+import useVisualActions from '../hooks/useVisualActions'
+
 const api = require('../neo4jApi');
 
 function Node(props) {
-  // const [predicates, setPredicates] = useState(props.data.predicates ?? {});
+  const VA = useVisualActions()
   const [showDetails, setShowDetails] = useState(false);
   const [theta, setTheta] = useState({})
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
   const predicates = props.data.predicates ?? {};
-  const VEDAPosition = props.data.VEDAPosition;
-
-  // for VEDA
-  const [ranTheta] = useState(Math.random() * 2 * Math.PI)
 
   useEffect(async () => {
     const propValues = await api.fetchPropertyValues(props.data.label);
     setPropData(propValues);
   }, []);
-
-  const _internalDispatchVEDAPosition = (val) => {
-    dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'VEDAPosition', newVal: val } });
-  }
-  const _internalDispatchPredicates = (predicates) => {
-    dispatch({ type: 'MODIFY_NODE_DATA', payload: { node: props.id, prop: 'predicates', newVal: predicates } });
-  }
-
-
-  // console.log('ranTheata is', ranTheta)
-  // console.log('number of cirlces', VEDAPosition.length)
-  useEffect(() => {
-    var theta = {};
-    var n = Object.keys(predicates).length;
-    let i = 0
-    for (const pre of VEDAPosition) {
-      let angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
-        let checkAngle = angle % (Math.PI / 2)
-        while ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
-          i++;
-          // console.log('skipped angle', angle)
-          angle = ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
-          checkAngle = angle % (Math.PI / 2)
-      }
-      if (pre !== '') {
-        console.log(`${pre} assigned angle ${angle}`)
-        theta[pre] = angle
-      }
-      i++;
-    }
-    setTheta(theta)
-  }, [VEDAPosition])
-
 
   //* for distinguishing drag and click
   const mousePos = useRef(null)
@@ -74,52 +39,69 @@ function Node(props) {
       && (mouseY < mousePos.current.y + 3 && mouseY > mousePos.current.y - 3)
   }
 
-  const addPredicate = (attr) => {
-    _internalDispatchPredicates({ ...predicates, [attr]: [['0', '']] });
-    for (const [index, pos] of VEDAPosition.entries()) {
-      if (pos === ''){
-        const newPos = [...VEDAPosition]
-        newPos[index] = attr
-        _internalDispatchVEDAPosition(newPos)
-        return
-      }
+  const _internalDispatchGraph = (graph) => {
+    dispatch({
+      type: 'SET_GRAPH',
+      payload: graph
+    })
+  }
+
+  const addPredicate = (attr, color) => {
+    const graph = VA.add(state, "PREDICATE", {
+      attr,
+      vals: ['0', ''],
+      parent: props.id,
+      color,
+    })
+    _internalDispatchGraph(graph)
+  };
+
+  const updatePredicate = (action, parameters) => {
+    switch(action) {
+      case "modify":
+        _internalDispatchGraph(VA.update(state, "PREDICATE", {
+          parent: props.id,
+          ...parameters
+        }))
+        break;
+      case "add":
+        _internalDispatchGraph(VA.add(state, "PREDICATE", {
+          parent: props.id,
+          ...parameters
+        }))
+        break;
+      case "delete":
+        _internalDispatchGraph(VA.delete(state, "PREDICATE", {
+          parent: props.id,
+          ...parameters
+        }))
     }
-    _internalDispatchVEDAPosition([...VEDAPosition, attr])
-
-  };
-
-  const updatePredicate = (newPred) => {
-    //newPred: {attr: 'color', preds: [[0,1],[0,2]]
-    _internalDispatchPredicates({ ...predicates, [newPred.attr]: newPred.preds });
-  };
+  }
 
   const deletePredicate = (attr) => {
-    var preds = JSON.parse(JSON.stringify(predicates));
-    delete preds[attr];
-    const i = VEDAPosition.indexOf(attr)
-    if (i != -1){
-      const newPos = [...VEDAPosition]
-      newPos[i] = ''
-      _internalDispatchVEDAPosition(newPos)
-    }
-    _internalDispatchPredicates(preds);
+    const graph = VA.delete(state, "PREDICATE", {
+      parent: props.id,
+      attr,
+      deleteAll: true,
+    })
+    _internalDispatchGraph(graph)
   };
 
   const preds = () => {
     switch(state.predDisplayStatus) {
       case "FULL" :
         return (
-          Object.keys(predicates).map((attr, index) => (
-            <Predicate
-              key={attr}
-              index={index}
-              node={props.data.label}
-              predicate={{ attr: attr, preds: predicates[attr] }}
-              theta={theta[attr]}
-              color={Constants.PRED_COLOR_V2[props.data.attributes.indexOf(attr) % Constants.PRED_COLOR_V2.length].secondary}
-              nodeRad={(80 + Object.keys(predicates).length * 16) / 2}
-            />
-          ))
+          Object.keys(predicates).map((attr, index) => {
+            const circle = predicates[attr]
+
+            return (
+              <Predicate
+                key={attr}
+                index={index}
+                node={props.data.label}
+                {...circle}
+              />
+          )})
         );
       case "SEMI":
         if (Object.keys(predicates).length > 0){
@@ -127,7 +109,7 @@ function Node(props) {
             <PredicateCountBubble
               node={props.data.label}
               predicates={predicates}
-              nodeRad={(80 + Object.keys(predicates).length * 16) / 2}
+              nodeRad={props.data.radius}
             />
           )
         } else {
@@ -143,29 +125,17 @@ function Node(props) {
       id={'node-' + props.data.label}
       className="node"
       style={{
-        background: Constants.COLORS[(props.id) % Constants.COLORS.length],
-        // size of node depends on number of properties present
-        height: `${80 + Object.keys(predicates).length * 16}px`,
-        width: `${80 + Object.keys(predicates).length * 16}px`,
+        background: props.data.color,
+        height: `${props.data.radius * 2}px`,
+        width: `${props.data.radius * 2}px`,
       }}
     >
       <Handle type="target" position="left" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
       <Handle type="source" position="right" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
       {preds()}
-      {/* {Object.keys(predicates).map((attr, index) => {
-        // console.log(`IN NODE: , ${props.data.label}`)
-        // console.log(`IN NODE: , ${attr} predicate`)
-        // console.log('colour', props.data.attributes.indexOf(attr) % Constants.PRED_COLOR_V2.length)
-        return preds(attr, index)
-
-      })} */}
 
       <div style={{ position: 'relative', top: '50%', transform: 'translateY(-50%)' }}>
         <p className="h6"
-          // onClick={(e) => {
-          //   console.log(e)
-          //   setShowDetails(!showDetails)}
-          // }
           onMouseDown={e => mouseDownCoords(e)}
           onMouseUp={(e) => {
             if(isClick(e)) {

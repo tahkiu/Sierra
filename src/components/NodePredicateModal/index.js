@@ -5,6 +5,7 @@ import { PRED_COLOR_V2 } from '../../constants';
 import { Context } from '../../Store';
 import { PredicateDraw, PredicateCheckBox, SelectTag } from '../common';
 import { getNodeId } from '../../utils/getNodeId';
+import useVisualActions from '../../hooks/useVisualActions';
 
 const { Title } = Typography
 
@@ -22,6 +23,7 @@ const NodePredicateModal = ({
   currPos,
   propData,
 }) => {
+  const VA = useVisualActions()
   const [childrenDrawer, setChildDrawer] = useState({});
   const [state, dispatch] = useContext(Context);
 
@@ -44,53 +46,66 @@ const NodePredicateModal = ({
     // set connected of existing node to true
     dispatch({
       type: 'MODIFY_NODE_DATA',
-      payload: { node: nodeId, prop: 'connected', newVal: true }
-    });
-
-    var possibleNeighbours = state.neighbours[destNode].map(function (rs) {
-      return rs.label;
+      payload: { node: nodeId, prop: 'connected', newVal: true },
     });
 
     const destId = getNodeId();
-    // remove duplicates
-    possibleNeighbours = [...new Set(possibleNeighbours)];
+
+    let newState = VA.add(state, "NODE", {
+      data : {
+        connected: true
+      },
+      id: destId,
+      position: { x: currPos[0] + 200, y: currPos[1] },
+      label: destNode
+    })
+
+    newState = VA.add(newState, "EDGE", {
+      params: { source: nodeId, target: destId},
+      destNode
+    })
+
     dispatch({
-      type: 'SET_NODES',
-      payload: [
-        ...state.nodes,
-        {
-          id: destId,
-          data: {
-            label: destNode,
-            attributes: state.props[destNode],
-            possibleTargets: possibleNeighbours,
-            connected: true,
-            predicates: {},
-            VEDAPosition: [],
-          },
-          position: { x: currPos[0] + 200, y: currPos[1] },
-          type: 'special',
-        },
-      ],
-    });
+      type: 'SET_GRAPH',
+      payload: newState
+    })
+    // dispatch({
+    //   type: 'SET_NODES',
+    //   payload: [
+    //     ...state.nodes,
+    //     {
+    //       id: destId,
+    //       data: {
+    //         label: destNode,
+    //         attributes: state.props[destNode],
+    //         possibleTargets: possibleNeighbours,
+    //         connected: true,
+    //         predicates: {},
+    //         VEDAPosition: [],
+    //       },
+    //       position: { x: currPos[0] + 200, y: currPos[1] },
+    //       type: 'special',
+    //     },
+    //   ],
+    // });
 
     // add new edge
-    var newParams = { source: nodeId, target: destId };
-    newParams.type = 'custom';
-    newParams.arrowHeadType = 'arrowclosed';
-    newParams.data = {
-      source: node,
-      destination: destNode,
-      rs: '',
-      relationships: [...state.neighbours[node]].filter(function (rs) {
-        return rs.label === destNode;
-      }),
-      predicates: {}
-    };
-    dispatch({
-      type: 'SET_EDGES',
-      payload: addEdge(newParams, state.edges),
-    });
+    // var newParams = { source: nodeId, target: destId };
+    // newParams.type = 'custom';
+    // newParams.arrowHeadType = 'arrowclosed';
+    // newParams.data = {
+    //   source: node,
+    //   destination: destNode,
+    //   rs: '',
+    //   relationships: [...state.neighbours[node]].filter(function (rs) {
+    //     return rs.label === destNode;
+    //   }),
+    //   predicates: {}
+    // };
+    // dispatch({
+    //   type: 'SET_EDGES',
+    //   payload: addEdge(newParams, state.edges),
+    // });
   };
 
   return (
@@ -112,7 +127,7 @@ const NodePredicateModal = ({
                 <PredicateDraw
                   onClose={() => onChildrenDrawerClose(attr)}
                   attr={attr}
-                  oldPredicate={{ attr: attr, preds: predicates[attr] }}
+                  oldPredicate={{ attr: attr, preds: predicates[attr].data }}
                   updatePredicate={updatePredicate}
                   deletePredicate={deletePredicate}
                   propValues={propData
@@ -135,7 +150,7 @@ const NodePredicateModal = ({
                 title={attr}
                 checked={Object.keys(predicates).indexOf(attr) !== -1}
                 onAddPredicate={() => {
-                  addPredicate(attr)
+                  addPredicate(attr, PRED_COLOR_V2[i % PRED_COLOR_V2.length])
                   setChildDrawer({
                     ...childrenDrawer,
                     [attr]:true

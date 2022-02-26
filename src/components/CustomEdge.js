@@ -6,6 +6,7 @@ import { BsPencilSquare, BsPlusCircle, BsFillEyeFill } from 'react-icons/bs';
 import * as Constants from '../constants';
 import Predicate from './Predicate';
 import EdgeModal from './EdgeModal';
+import useVisualActions from '../hooks/useVisualActions';
 
 const api = require('../neo4jApi');
 
@@ -26,6 +27,7 @@ function CustomEdge({
   markerEndId,
 }) {
 
+  const VA = useVisualActions()
   const [directed, setDirected] = useState(true);
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
@@ -38,40 +40,75 @@ function CustomEdge({
   const {rs} = data
   const isDirected = arrowHeadType === "arrowclosed"
 
+  const _internalDispatchGraph = (graph) => {
+    dispatch({
+      type: 'SET_GRAPH',
+      payload: graph
+    })
+  }
+
   const toggleDirected = () => {
     updateEdgeRs("")
-    dispatch({
-      type: 'MODIFY_EDGE',
-      payload: { edge: id, prop: 'arrowHeadType', newVal: isDirected ? '' : 'arrowclosed' },
-    });
+    const graph = VA.update(state, "EDGE", {
+      edge: id,
+      prop: 'arrowHeadType',
+      newVal: isDirected ? '' : 'arrowclosed'
+    })
+    _internalDispatchGraph(graph)
   }
 
   const updateEdgeRs = async (newRs) => {
-    // console.log('updating edge RS with ', newRs)
-    dispatch({ type: 'MODIFY_EDGE', payload: { edge: id, prop: 'data', newVal: { ...data, rs: newRs, predicates: {} } } });
+    const graph = VA.update(state, "EDGE", {
+      edge: id,
+      prop: 'data',
+      newVal: { ...data, rs: newRs, predicates: {} }
+    })
+    _internalDispatchGraph(graph)
     if (newRs !== '') {
       const propValues = await api.fetchEdgePropertyValues(newRs);
       setPropData(propValues);
     }
   }
 
-  const _internalDispatchPredicates = (predicates) => {
-    dispatch({ type: 'MODIFY_EDGE', payload: { edge: id, prop: 'data', newVal: { ...data, predicates: predicates } } })
+  const addPredicate = (attr, color) => {
+    const graph = VA.add(state, "PREDICATE", {
+      attr,
+      vals: ['0', ''],
+      parent: id,
+      color,
+    })
+    _internalDispatchGraph(graph)
+  };
+
+  const updatePredicate = (action, parameters) => {
+    switch(action) {
+      case "modify":
+        _internalDispatchGraph(VA.update(state, "PREDICATE", {
+          parent: id,
+          ...parameters
+        }))
+        break;
+      case "add":
+        _internalDispatchGraph(VA.add(state, "PREDICATE", {
+          parent: id,
+          ...parameters
+        }))
+        break;
+      case "delete":
+        _internalDispatchGraph(VA.delete(state, "PREDICATE", {
+          parent: id,
+          ...parameters
+        }))
+    }
   }
 
-  const addPredicate = (attr) => {
-    _internalDispatchPredicates({ ...predicates, [attr]: [['0', '']] });
-  };
-
-  const updatePredicate = (newPred) => {
-    //newPred is in the format: {attr: 'color', preds: [[0,1],[0,2]]
-    _internalDispatchPredicates({ ...predicates, [newPred.attr]: newPred.preds });
-  };
-
   const deletePredicate = (attr) => {
-    var preds = JSON.parse(JSON.stringify(predicates));
-    delete preds[attr];
-    _internalDispatchPredicates(preds);
+    const graph = VA.delete(state, "PREDICATE", {
+      parent: id,
+      attr,
+      deleteAll: true,
+    })
+    _internalDispatchGraph(graph)
   };
 
   let availRs = {};
@@ -88,7 +125,6 @@ function CustomEdge({
         d={edgePath}
         markerEnd={markerEnd}
         onClick={(e) => {
-          // setShowEdit(!showEdit)
           e.stopPropagation()
           setModalVisible(true)
           }
@@ -96,34 +132,32 @@ function CustomEdge({
       >
 
       </path>
-      {Object.keys(predicates).map((attr, index) => (
-      <g key={attr} fill={Constants.PRED_COLOR_V2[availRs[rs].indexOf(attr) % Constants.PRED_COLOR_V2.length].secondary}
-      stroke="black" strokeWidth="1">
-        <circle onClick={
-          (e)=>{
-            e.stopPropagation()
-            setModalVisible(true)
-          }
-        }
-        cx={sourceX < targetX ? sourceX + (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length) :
-          sourceX - (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length)}
-        cy={sourceY < targetY ? sourceY + (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) :
-          sourceY - (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) }
-        r={6+2*predicates[attr].length} />
-          <Predicate
-            index={index}
-            predicate={{ attr: attr, preds: predicates[attr] }}
-            color={Constants.PRED_COLOR_V2[availRs[rs].indexOf(attr) % Constants.PRED_COLOR_V2.length].secondary}
-            propValues={propData
-              .filter(function (item) {
-                return Object.keys(item).includes(attr);
-              })
-              .map(function (item) {
-                return item[attr];
-              })}
-          ></Predicate>
-          </g>
-        ))}
+      {Object.keys(predicates).map((attr, index) => {
+        const circle = {...predicates[attr]}
+        const {position} = circle
+        delete circle.position
+
+        return (
+          <g key={attr} fill={circle.color.secondary}
+          stroke="black" strokeWidth="1">
+            <circle onClick={
+                (e)=>{
+                  e.stopPropagation()
+                  setModalVisible(true)
+                }
+              }
+              cx={sourceX < targetX ? sourceX + (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length) :
+                sourceX - (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length)}
+              cy={sourceY < targetY ? sourceY + (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) :
+                sourceY - (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) }
+              r={circle.radius} />
+                <Predicate
+                  {...circle}
+                  position={{x:0, y: 0}}
+                />
+            </g>
+        )}
+      )}
 
       <text dy="-10px">
         <textPath href={`#${id}`} style={{ fontSize: '1rem' }} startOffset="50%" textAnchor="middle">
