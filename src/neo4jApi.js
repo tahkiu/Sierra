@@ -115,9 +115,9 @@ const convertToQuery = (state) => {
   var allPredsArr = [];
   for (var i = 0; i < state.nodes.length; i++) {
     var curNode = state.nodes[i];
-    if(curNode.data['rep']) {
+    if(curNode.data['rep'] && curNode.isBold) {
       returnVars.push(curNode.data.rep);
-    } else {
+    } else if (curNode.isBold) {
       curNode.data['rep'] = (parseInt(curNode.id) + 10).toString(36);
       returnVars.push(curNode.data.rep);
     }
@@ -203,7 +203,7 @@ ${allPredsQueryString}
 RETURN ${returnVars.join(', ')}` :
 
     `MATCH ${loneQueryString}${allRsQueriesString}
-${allPredsQueryString}`
+RETURN ${returnVars.join(', ')}`
 
 
 }

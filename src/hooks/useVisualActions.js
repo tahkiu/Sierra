@@ -1,6 +1,7 @@
-import React, {useContext} from 'react';
-
+import React from 'react';
 import useVEDAOperators from './useVEDAOperators';
+const api = require('../neo4jApi');
+
 const useVisualActions = () => {
   const vedaOperatorController = useVEDAOperators()
   class VisualActions {
@@ -11,7 +12,7 @@ const useVisualActions = () => {
       switch(type) {
         case "NODE" :
           //* call operator processor
-          operators.push(...["APPEARS", "CIRCLE", payload.label])
+          operators.push(...["APPEARS", "CIRCLE", payload.label, "BOLD", payload.label])
           break;
         case "PREDICATE" :
           //* call operator processor
@@ -70,12 +71,17 @@ const useVisualActions = () => {
       return vedaOperatorController.process(graph, operators, payload)
     }
 
-    return(){
-      //TODO: when have time argh
+    return(graph, type, payload){
+      const operators = []
+      if(type === "NODE") {
+        operators.push(...["BOLD", payload.label])
+      }
+      return vedaOperatorController.process(graph, operators, payload)
     }
 
-    run(query){
+    async run (query){
       //* call the run api
+      return api.runQuery(query)
     }
 
   }

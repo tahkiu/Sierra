@@ -1,5 +1,5 @@
 import { Drawer, Button, Typography, Divider, Card, Form, Select, Tooltip } from 'antd';
-import { DeleteOutlined, PlusOutlined} from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, ArrowLeftOutlined} from '@ant-design/icons';
 import React, {useState, useEffect} from 'react';
 import { cssNumber } from 'jquery';
 
@@ -142,9 +142,13 @@ export default function({
     <Drawer
       title={<Title style={{marginBottom: 0}}level={3}>Attribute: <span style={{color: titleColor}}>{attr}</span></Title>}
       placement="left"
-      closable={false}
+      closable={true}
+      maskClosable={false}
+      mask={false}
+      closeIcon={<ArrowLeftOutlined />}
       onClose={onClose}
       visible={visible}
+      push={false}
     >
       <Divider orientation="left">
         Selected Predicates

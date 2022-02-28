@@ -6,6 +6,7 @@ export class Circle {
     this.type = type //* to know which style of circle to use
     this.data = data // eg. [0, Japan], [0, China]
     this.color = color
+    this.isBold = false
     this.componentType = componentType // componentType === "NODE" | "PREDICATE"
     this.radius = componentType === "NODE" ? 40 : 8 // 80 if
     if (componentType === "NODE") {
@@ -24,6 +25,10 @@ export class Circle {
     const increase = this.componentType === "NODE" ? 8 : 2
     this.radius = this.radius - increase
     return increase
+  }
+
+  bold() {
+    this.isBold = !this.isBold
   }
 
   join(circle){
@@ -149,4 +154,5 @@ export class Arrow {
     delete preds[key]
     this.data.predicates = preds
   }
+
 }

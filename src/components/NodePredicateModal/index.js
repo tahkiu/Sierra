@@ -1,4 +1,5 @@
 import { Drawer, Button, Divider, Typography } from 'antd';
+import {ArrowLeftOutlined} from '@ant-design/icons'
 import React, {useState, useContext} from 'react';
 import { addEdge } from 'react-flow-renderer';
 import { PRED_COLOR_V2 } from '../../constants';
@@ -69,52 +70,18 @@ const NodePredicateModal = ({
       type: 'SET_GRAPH',
       payload: newState
     })
-    // dispatch({
-    //   type: 'SET_NODES',
-    //   payload: [
-    //     ...state.nodes,
-    //     {
-    //       id: destId,
-    //       data: {
-    //         label: destNode,
-    //         attributes: state.props[destNode],
-    //         possibleTargets: possibleNeighbours,
-    //         connected: true,
-    //         predicates: {},
-    //         VEDAPosition: [],
-    //       },
-    //       position: { x: currPos[0] + 200, y: currPos[1] },
-    //       type: 'special',
-    //     },
-    //   ],
-    // });
-
-    // add new edge
-    // var newParams = { source: nodeId, target: destId };
-    // newParams.type = 'custom';
-    // newParams.arrowHeadType = 'arrowclosed';
-    // newParams.data = {
-    //   source: node,
-    //   destination: destNode,
-    //   rs: '',
-    //   relationships: [...state.neighbours[node]].filter(function (rs) {
-    //     return rs.label === destNode;
-    //   }),
-    //   predicates: {}
-    // };
-    // dispatch({
-    //   type: 'SET_EDGES',
-    //   payload: addEdge(newParams, state.edges),
-    // });
   };
 
   return (
       <Drawer
         title={<Title style={{marginBottom: 0}}level={3}>{node}</Title>}
         placement="left"
-        closable={false}
+        closeIcon={<ArrowLeftOutlined/>}
+        maskClosable={false}
+        mask={false}
         onClose={onClose}
         visible={visible}
+        push={false}
       >
         <Divider orientation="left">Selected Predicates</Divider>
 
@@ -174,7 +141,6 @@ const NodePredicateModal = ({
                 key={`${i}`}
                 onClick={() => {
                   addTarget(target)
-                  onClose()
                 }} type="text">
                 {target}
               </Button>

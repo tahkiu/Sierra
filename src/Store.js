@@ -7,7 +7,8 @@ const initialState = {
   entities: [],
   neighbours: {},
   props: {},
-  predDisplayStatus: 'FULL'
+  predDisplayStatus: 'FULL',
+  modalVisible: ''
 };
 
 const Store = ({ children }) => {

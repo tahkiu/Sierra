@@ -36,7 +36,8 @@ function App() {
   const [cypherQuery, setCypherQuery] = useState('')
 
   const handleSearch = async () => {
-    const res = await api.runQuery(cypherQuery); // VA.run()
+   // const res = await api.runQuery(cypherQuery); // VA.run()
+    const res = await VA.run(cypherQuery)
     setSearchResult(res);
     setShowResults(true);
   };
@@ -119,11 +120,17 @@ function App() {
         <Spin indicator={<LoadingOutlined style={{ fontSize: 42 }} spin />} style={{margin:'35% 50%'}} />
       </div>)
     } else if (pageStatus === "READY") {
+      console.log(state.modalVisible, 'HREHRE')
       return (
         <>
           <div>
             <div className="main-buttons">
-              <Title style={{margin: 0}} level={3}>SIERRA</Title>
+              {state.modalVisible !== '' && (<div style={{width: 363}}/>)}
+              <Title
+                style={{margin: 0}}
+                level={3}>
+                  SIERRA
+              </Title>
               <InfoCircleOutlined
                 onClick={() => setShowHelp(!showHelp)}
                 style={{
@@ -152,9 +159,11 @@ function App() {
           <CypherTextEditor text={cypherQuery}/>
           <ReactFlow
             elements={state.nodes.map(
-                n => ({...n, data: {...n.data, color: n.color,radius:  n.radius}})
+                n => ({...n, data: {...n.data, color: n.color,radius:  n.radius, isBold: n.isBold}})
               )
-              .concat(state.edges)}
+              .concat(state.edges.map(
+                e => ({...e, data: {...e.data, isBold: e.isBold}})
+                ))}
             style={{ width: '100%', height: '100vh' }}
             nodeTypes={{ special: Node }}
             edgeTypes={{ custom: CustomEdge }}

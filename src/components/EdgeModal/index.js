@@ -1,5 +1,6 @@
 import React, {useState, useContext} from 'react';
 import {Button, Drawer, Typography, Select, Divider, Tag, Tooltip} from 'antd';
+import {ArrowLeftOutlined} from '@ant-design/icons'
 import { PRED_COLOR_V2 } from '../../constants';
 import {Context} from '../../Store';
 import { PredicateCheckBox, PredicateDraw, SelectTag } from '../common';
@@ -9,7 +10,6 @@ const {Option} = Select;
 const EdgeModal = ({
   source,
   destination,
-  visible,
   onClose,
   isDirected,
   toggleDirected,
@@ -20,7 +20,8 @@ const EdgeModal = ({
   addPredicate,
   updatePredicate,
   deletePredicate,
-  propData
+  propData,
+  visible
 }) => {
   //..
   const [state, dispatch] = useContext(Context);
@@ -47,9 +48,12 @@ const EdgeModal = ({
     <Drawer
         title={<Title style={{marginBottom: 0}}level={3}>{source} - {destination}</Title>}
         placement="left"
-        closable={false}
+        closeIcon={<ArrowLeftOutlined />}
         onClose={onClose}
         visible={visible}
+        push={false}
+        maskClosable={false}
+        mask={false}
       >
         <>
           <div style={{padding: '0px 15px 10px'}}>

@@ -9,11 +9,14 @@ import { Context } from '../../Store';
 import { addEdge } from 'react-flow-renderer';
 import './index.css';
 import { resetCurAvailId, undoResetNodeId } from '../../utils/getNodeId';
+import useVisualActions from '../../hooks/useVisualActions';
+import {PRED_COLOR_V2} from '../../constants'
 
 const { Title } = Typography
 
 export default function({text}){
   const [state, dispatch] = useContext(Context);
+  const VA = useVisualActions()
   const [innerText, setInnerText] = useState(text)
   const onCopy = () => {
     if(innerText){
@@ -27,6 +30,12 @@ export default function({text}){
       resetCurAvailId()
       let {nodes: midNodes, edges: midEdges} = convertToGraph(innerText, state)
       let nodes = []
+      let newGraph = {
+        ...state,
+        nodes: [],
+        edges: []
+      }
+
       for (const [key, n] of Object.entries(midNodes)) {
 
         let possibleNeighbours = state.neighbours[n.label].map(function (rs) {
@@ -34,51 +43,105 @@ export default function({text}){
         });
         possibleNeighbours = [...new Set(possibleNeighbours)];
 
-        //TODO: need to update position relatively
-        nodes.push({
+        newGraph = VA.add(newGraph, "NODE", {
           id: n.nodeId,
+          label: n.label,
           data: {
-            label:n.label,
             connected: n.connected,
-            attributes: state.props[n.label],
-            possibleTargets: possibleNeighbours,
-            connected: n.connected,
-            predicates: n.predicates ? n.predicates : {},
             rep: key,
-            VEDAPosition: Object.keys(n.predicates ?? {})
-          },
-          position: {x: 500, y: 200},
-          type: 'special'
+          }
         })
+
+        if(n.predicates) {
+          for(const key in n.predicates) {
+            const preds = n.predicates[key]
+            const i = state.props[n.label].indexOf(key)
+            const color = PRED_COLOR_V2[i % PRED_COLOR_V2.length]
+
+            for(const [l, v] of preds) {
+              newGraph = VA.add(newGraph, "PREDICATE", {
+                attr: key,
+                vals: [l, v],
+                parent: n.nodeId,
+                color,
+              })
+            }
+          }
+        }
       }
 
-      let edges = []
       for (const [key, e] of Object.entries(midEdges)) {
-        var newParams = { source: e.source, target: e.target };
-        newParams.type = 'custom';
-        newParams.arrowHeadType = e.arrowHeadType;
-        newParams.data = {
-          source: e.dSource,
-          destination: e.dTarget,
-          rs: e.rs,
-          rep: e.rep,
-          relationships: [...state.neighbours[e.dSource]].filter(function (rs) {
-            return rs.label === e.dTarget;
-          }),
-          predicates: e.predicates ? e.predicates : {}
-        };
-        edges = addEdge(newParams, edges)
+        newGraph = VA.add(newGraph, "EDGE", {
+          params: {
+            source: e.source,
+            target: e.target,
+          },
+          addData: {
+            rs: e.rs,
+            rep: e.rep
+          }
+        })
+        const edgeId = `e${e.source}-${e.target}`
+        if(e.arrowHeadType) {
+          newGraph = VA.update(newGraph, "EDGE", {
+            edge: edgeId,
+            prop: 'arrowHeadType',
+            newVal: e.arrowHeadType
+          })
+        }
+
+        if(e.predicates) {
+          for(const key in e.predicates) {
+            const preds = e.predicates[key]
+
+            const {relationships} = newGraph.edges.find(el => el.id === edgeId).data
+            let allRs = {}
+            relationships.map(rsItem => {
+              allRs[rsItem.type] = rsItem.props
+            })
+            const rsAttributes = e.rs ? allRs[e.rs] : []
+            const i = rsAttributes.indexOf(key)
+            const color = PRED_COLOR_V2[i % PRED_COLOR_V2.length]
+
+            for(const [l, v] of preds) {
+              newGraph = VA.add(newGraph, "PREDICATE", {
+                attr: key,
+                vals: [l, v],
+                parent: edgeId,
+                color,
+              })
+            }
+          }
+        }
       }
+      //   var newParams = { source: e.source, target: e.target };
+      //   newParams.type = 'custom';
+      //   newParams.arrowHeadType = e.arrowHeadType;
+      //   newParams.data = {
+      //     source: e.dSource,
+      //     destination: e.dTarget,
+      //     rs: e.rs,
+      //     rep: e.rep,
+      //     relationships: [...state.neighbours[e.dSource]].filter(function (rs) {
+      //       return rs.label === e.dTarget;
+      //     }),
+      //     predicates: e.predicates ? e.predicates : {}
+      //   };
+      //   edges = addEdge(newParams, edges)
+      // }
 
+      // dispatch({
+      //   type: 'SET_NODES',
+      //   payload: nodes,
+      // })
+      // dispatch({
+      //   type: 'SET_EDGES',
+      //   payload: edges
+      // })
       dispatch({
-        type: 'SET_NODES',
-        payload: nodes,
+        type: 'SET_GRAPH',
+        payload: newGraph
       })
-      dispatch({
-        type: 'SET_EDGES',
-        payload: edges
-      })
-
     } catch (e){
       undoResetNodeId()
       message.error(`Query unsupported by sierra, error message: ${e}` )

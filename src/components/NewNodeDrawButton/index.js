@@ -33,6 +33,7 @@ const NewNodeDrawButton = ({addNode}) => {
         New Node
       </Button>
       <Drawer
+        zIndex={10000}
         closeIcon={null}
         title={<Title style={{marginBottom: 0}}level={3} >Add A New Node</Title>}
         placement="left"

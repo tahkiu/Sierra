@@ -1,4 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useRef, useState, useEffect } from 'react';
+import _ from 'lodash'
 import { getBezierPath, getMarkerEnd } from 'react-flow-renderer';
 import ReactDOM from 'react-dom';
 import { Context } from '../Store';
@@ -31,7 +32,6 @@ function CustomEdge({
   const [directed, setDirected] = useState(true);
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false)
 
   const edgePath = `M ${sourceX}, ${sourceY}L ${targetX}, ${targetY}`
   const markerEnd = getMarkerEnd(directed === true ? arrowHeadType : '', markerEndId);
@@ -39,6 +39,28 @@ function CustomEdge({
   const predicates = data.predicates ?? {}
   const {rs} = data
   const isDirected = arrowHeadType === "arrowclosed"
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const propValues = await api.fetchEdgePropertyValues(rs);
+      return propValues
+    }
+
+    if (rs !== '') {
+      fetchData().then(res => {
+        setPropData(res);
+      })
+
+    }
+
+  }, [rs])
+
+  const setModalVisible = (bool) => {
+    dispatch({
+      type:'SET_OPEN_MODAL',
+      payload: bool ? id : ''
+    })
+  }
 
   const _internalDispatchGraph = (graph) => {
     dispatch({
@@ -64,10 +86,7 @@ function CustomEdge({
       newVal: { ...data, rs: newRs, predicates: {} }
     })
     _internalDispatchGraph(graph)
-    if (newRs !== '') {
-      const propValues = await api.fetchEdgePropertyValues(newRs);
-      setPropData(propValues);
-    }
+
   }
 
   const addPredicate = (attr, color) => {
@@ -76,6 +95,8 @@ function CustomEdge({
       vals: ['0', ''],
       parent: id,
       color,
+      sourcePos: {x: sourceX, y: sourceY},
+      targetPos: {x: targetX, y: targetY}
     })
     _internalDispatchGraph(graph)
   };
@@ -169,10 +190,10 @@ function CustomEdge({
         destination={data.destination}
         isDirected={isDirected}
         toggleDirected={toggleDirected}
-        visible={modalVisible}
         onClose={() => {setModalVisible(false)}}
         allRs={availRs}
         rs={rs}
+        visible={id === state.modalVisible}
         updateEdgeRs={updateEdgeRs}
         predicates={predicates}
         addPredicate={addPredicate}

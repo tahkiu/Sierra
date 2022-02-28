@@ -16,10 +16,16 @@ const useVEDAOperators = () => {
 
       if (op[0] === "APPEARS") {
         return this.appears(graph, op.slice(1), payload)
+
       } else if (op[0] === "DISAPPEARS") {
         return this.disappears(graph, op.slice(1), payload)
+
+      } else if (op[0] === "BOLD") {
+        return this.bold(graph, op.slice(1), payload)
+
       } else if (["CIRCLE", "ARROW"].indexOf(op[0]) !== -1){
         return this.update(graph, op, payload)
+
       } else {
         throw "unhandled operators"
       }
@@ -31,7 +37,7 @@ const useVEDAOperators = () => {
         let arr = op[1].split(".")
         if (arr.length === 1) {
           //* add a new node
-          return this.addNewNode(graph, op[1], payload)
+          return this.addNewNode(graph, op.slice(1), payload)
         } else {
           //* add a new predicate (need to distinguish node and arrow)
           return this.addNewPredicate(graph, payload)
@@ -58,6 +64,22 @@ const useVEDAOperators = () => {
       } else if (op[0] === "ARROW") {
           //* add a new arrow
           return this.deleteEdge(graph, payload)
+      } else {
+        return graph
+      }
+    }
+
+    bold(graph, op, payload) {
+      let newNodes = [...graph.nodes]
+      const nodeTBC = newNodes.find((el) => el.id === payload.id)
+      if (nodeTBC) {
+        nodeTBC.bold()
+        return {
+          ...graph,
+          nodes: newNodes
+        }
+      } else {
+        return graph
       }
     }
 
@@ -106,7 +128,8 @@ const useVEDAOperators = () => {
     }
 
     //* lower level functions
-    addNewNode(graph, nodeName, payload = {}) {
+    addNewNode(graph, op, payload = {}) {
+      const nodeName = op[0]
       const addData = payload.data ?? {}
       var possibleNeighbours = graph.neighbours[nodeName].map(function (rs) {
         return rs.label;
@@ -130,6 +153,10 @@ const useVEDAOperators = () => {
           ...addData
         },
       })
+
+      if (op.indexOf("BOLD") !== -1) {
+        circle.bold()
+      }
 
       return {
         ...graph,
@@ -168,6 +195,7 @@ const useVEDAOperators = () => {
       } else { //* parent is an edge
 
         let newEdges = [...graph.edges]
+        let newNodes = [...graph.nodes]
         const edgeTBC = newEdges.find((el) => el.id === parent)
         const preds = edgeTBC.data.predicates
         if (attr in preds) {
@@ -175,11 +203,49 @@ const useVEDAOperators = () => {
           preds[attr].join(predCircle)
         } else {
           edgeTBC.join(predCircle)
+
+          const {sourcePos, targetPos} = payload
+          const L = Math.sqrt((sourcePos.x - targetPos.x)**2 + (sourcePos.y - targetPos.y)**2)
+          const minGap = 18
+          console.log(Object.keys(edgeTBC.data.predicates).length)
+          const minArrowLength = 2 * (8 + minGap + (minGap + 16) * Math.ceil((Object.keys(edgeTBC.data.predicates).length - 1)/2))
+          console.log('L', L)
+          console.log('M', minArrowLength)
+          if(L < minArrowLength) {
+            console.log('EXCEED')
+            //* increase arrow length by 2r + minGap => increase length by 34
+            const increase = (minGap + 16) / 2
+            const gradient = (targetPos.y - sourcePos.y) / (targetPos.x - sourcePos.x)
+            const theta = Math.atan(gradient)
+            const O = increase * Math.sin(theta)
+            const A = increase * Math.cos(theta)
+
+            const srcId = edgeTBC.source;
+            const destId = edgeTBC.target
+
+            const srcNodeTBC = newNodes.find((el) => el.id === edgeTBC.source)
+            const destNodeTBC = newNodes.find((el) => el.id === edgeTBC.target)
+
+
+            const newSourcePos = {
+              x: sourcePos.x - A - (srcNodeTBC.radius * 2 + 4),
+              y: sourcePos.y - O - srcNodeTBC.radius
+            }
+            const newDestPos = {
+              x: targetPos.x + A + 4,
+              y: targetPos.y + O - destNodeTBC.radius
+            }
+
+            srcNodeTBC.position = newSourcePos;
+            destNodeTBC.position = newDestPos;
+          }
+
         }
 
         return {
           ...graph,
-          edges: newEdges
+          edges: newEdges,
+          nodes: newNodes
         }
       }
     }
@@ -229,7 +295,7 @@ const useVEDAOperators = () => {
     }
 
     addNewEdge(graph, payload) {
-      let { params, destNode } = payload
+      let { params, destNode, addData } = payload
       const nodesCpy = graph.nodes;
       const allNeighbours = graph.neighbours;
       const src = nodesCpy.find((el) => el.id === params.source);
@@ -254,6 +320,7 @@ const useVEDAOperators = () => {
         relationships: [...allNeighbours[src.data.label]].filter(function (rs) {
           return rs.label === destNode;
         }),
+        ...addData,
         predicates: {}
       };
       newParams.id = `e${params.source}-${params.target}`

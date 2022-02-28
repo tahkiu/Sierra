@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import _ from 'lodash'
 import ReactDOM from 'react-dom';
 import Predicate from './Predicate';
 import PredicateCountBubble from './PredicateCountBubble';
@@ -15,12 +16,12 @@ const api = require('../neo4jApi');
 
 function Node(props) {
   const VA = useVisualActions()
-  const [showDetails, setShowDetails] = useState(false);
   const [theta, setTheta] = useState({})
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
   const predicates = props.data.predicates ?? {};
 
+  // console.log(`node ${props.data.label}, ${props.xPos}, ${props.yPos}`)
   useEffect(async () => {
     const propValues = await api.fetchPropertyValues(props.data.label);
     setPropData(propValues);
@@ -37,6 +38,39 @@ function Node(props) {
 
     return (mouseX < mousePos.current.x + 3 && mouseX > mousePos.current.x - 3)
       && (mouseY < mousePos.current.y + 3 && mouseY > mousePos.current.y - 3)
+  }
+
+  const _delayedClick = useRef(null)
+  const clickedOnce = useRef(null)
+
+  const doClick = (e) => {
+    clickedOnce.current = undefined;
+    setShowDetails(true)
+    console.log('single click');
+  }
+
+  const handleClick = (e) => {
+    if (!_delayedClick.current) {
+      _delayedClick.current = _.debounce(doClick, 300);
+    }
+
+    if (clickedOnce.current) {
+      _delayedClick.current.cancel();
+      clickedOnce.current = false;
+      _internalDispatchGraph(VA.return(state, "NODE", {id: props.id, label: props.data.label}))
+      console.log('double click');
+
+    } else {
+      _delayedClick.current(e);
+      clickedOnce.current = true;
+    }
+  }
+
+  const setShowDetails = (bool) => {
+    dispatch({
+      type:'SET_OPEN_MODAL',
+      payload: bool ? props.id : ''
+    })
   }
 
   const _internalDispatchGraph = (graph) => {
@@ -128,6 +162,7 @@ function Node(props) {
         background: props.data.color,
         height: `${props.data.radius * 2}px`,
         width: `${props.data.radius * 2}px`,
+        border: props.data.isBold ? '1px solid #2F2F2F' : ''
       }}
     >
       <Handle type="target" position="left" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
@@ -139,7 +174,7 @@ function Node(props) {
           onMouseDown={e => mouseDownCoords(e)}
           onMouseUp={(e) => {
             if(isClick(e)) {
-              setShowDetails(!showDetails)
+              handleClick(e)
             }
           }}
         >
@@ -152,7 +187,7 @@ function Node(props) {
         targets={props.data.possibleTargets}
         attributes={props.data.attributes}
         predicates={predicates}
-        visible={showDetails}
+        visible={state.modalVisible === props.id}
         addPredicate={addPredicate}
         deletePredicate={deletePredicate}
         updatePredicate={updatePredicate}
