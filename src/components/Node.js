@@ -46,7 +46,6 @@ function Node(props) {
   const doClick = (e) => {
     clickedOnce.current = undefined;
     setShowDetails(true)
-    console.log('single click');
   }
 
   const handleClick = (e) => {
@@ -58,7 +57,6 @@ function Node(props) {
       _delayedClick.current.cancel();
       clickedOnce.current = false;
       _internalDispatchGraph(VA.return(state, "NODE", {id: props.id, label: props.data.label}))
-      console.log('double click');
 
     } else {
       _delayedClick.current(e);

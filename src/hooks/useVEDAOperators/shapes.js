@@ -10,7 +10,7 @@ export class Circle {
     this.componentType = componentType // componentType === "NODE" | "PREDICATE"
     this.radius = componentType === "NODE" ? 40 : 8 // 80 if
     if (componentType === "NODE") {
-      this.ranTheta = Math.random() * 2 * Math.PI
+      this.ranTheta = parameters.ranTheta ?? Math.random() * 2 * Math.PI
     }
   }
 
@@ -116,7 +116,7 @@ export class Circle {
           checkAngle = angle % (Math.PI / 2)
       }
       if (pre !== '') {
-        console.log(`${pre} assigned angle ${angle}`)
+        // console.log(`${pre} assigned angle ${angle}`)
         theta[pre] = angle
       }
       i++;

@@ -6,7 +6,7 @@ import { StreamLanguage } from "@codemirror/stream-parser";
 import { cypher } from "@codemirror/legacy-modes/mode/cypher";
 import { convertToGraph } from '../../utils/converToGraph';
 import { Context } from '../../Store';
-import { addEdge } from 'react-flow-renderer';
+import { useStoreState } from 'react-flow-renderer';
 import './index.css';
 import { resetCurAvailId, undoResetNodeId } from '../../utils/getNodeId';
 import useVisualActions from '../../hooks/useVisualActions';
@@ -16,6 +16,7 @@ const { Title } = Typography
 
 export default function({text}){
   const [state, dispatch] = useContext(Context);
+  const [cnlNodes, cnlEdges] = useStoreState((store) => [store.nodes, store.edges])
   const VA = useVisualActions()
   const [innerText, setInnerText] = useState(text)
   const onCopy = () => {
@@ -35,7 +36,9 @@ export default function({text}){
         nodes: [],
         edges: []
       }
+      const nodePositionMap = {}
 
+      console.log(cnlNodes.map(n => n.__rf.position))
       for (const [key, n] of Object.entries(midNodes)) {
 
         let possibleNeighbours = state.neighbours[n.label].map(function (rs) {
@@ -43,9 +46,33 @@ export default function({text}){
         });
         possibleNeighbours = [...new Set(possibleNeighbours)];
 
+        const oldCopy = cnlNodes.find((el) => el.id === n.nodeId)
+        let oldPosition = {x: 500, y: 200}
+        let oldRanTheta
+
+        if (oldCopy && n.label === oldCopy.data.label) {
+          oldPosition = oldCopy.__rf.position
+          oldRanTheta = oldCopy.ranTheta
+        } else {
+          // check for collision
+          let positions = Object.values(nodePositionMap)
+          if(positions.length > 0){
+            positions = positions.filter(e => {
+              console.log(e)
+              return e && e.x > 450 && e.x < 550
+            })
+          }
+
+          console.log('pos', positions)
+
+        }
+
+        nodePositionMap[n.nodeId] = oldPosition
         newGraph = VA.add(newGraph, "NODE", {
           id: n.nodeId,
           label: n.label,
+          position: oldPosition,
+          ranTheta: oldRanTheta,
           data: {
             connected: n.connected,
             rep: key,
@@ -114,30 +141,7 @@ export default function({text}){
           }
         }
       }
-      //   var newParams = { source: e.source, target: e.target };
-      //   newParams.type = 'custom';
-      //   newParams.arrowHeadType = e.arrowHeadType;
-      //   newParams.data = {
-      //     source: e.dSource,
-      //     destination: e.dTarget,
-      //     rs: e.rs,
-      //     rep: e.rep,
-      //     relationships: [...state.neighbours[e.dSource]].filter(function (rs) {
-      //       return rs.label === e.dTarget;
-      //     }),
-      //     predicates: e.predicates ? e.predicates : {}
-      //   };
-      //   edges = addEdge(newParams, edges)
-      // }
 
-      // dispatch({
-      //   type: 'SET_NODES',
-      //   payload: nodes,
-      // })
-      // dispatch({
-      //   type: 'SET_EDGES',
-      //   payload: edges
-      // })
       dispatch({
         type: 'SET_GRAPH',
         payload: newGraph

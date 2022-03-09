@@ -3,7 +3,14 @@ import { getNodeId } from "./getNodeId";
 const processMatchSubquery = (s, midState, repToElementMap, state) => {
   //* split into nodes and edges, identify rep
   const queries = s.split(',').map(s => s.trim())
-  queries.forEach(q => {
+  queries.sort((a, b) => {
+    if (b.includes("--") && !a.includes("--")) {
+      return -1;
+    } else {
+      return 1
+    }
+  })
+  .forEach(q => {
       const reps = []
       //* identify (rep:Property) nodes
       let pt = 0
@@ -31,7 +38,7 @@ const processMatchSubquery = (s, midState, repToElementMap, state) => {
         const key = r[0]
         if (!midState.nodes[key]) {
             midState.nodes[key] = {
-                nodeId: getNodeId(),
+                nodeId: getNodeId(r[0]),
                 label: r[1],
                 connected: false
             }
@@ -133,8 +140,8 @@ const processWhereSubquery = (s, midState, repToElementMap, state) => {
       }
       if (rep in midState.nodes){
         const label = midState.nodes[rep].label
-        console.log('checking nodes', rep, property, label)
-        console.log(state.props[label])
+        // console.log('checking nodes', rep, property, label)
+        // console.log(state.props[label])
 
         if(state.props[label].indexOf(property) === -1){
           console.log('118')

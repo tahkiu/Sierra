@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Node from './components/Node';
-import ReactFlow, { Controls, isEdge, addEdge, removeElements, Background, useStoreState } from 'react-flow-renderer';
+import ReactFlow, { Controls, isEdge, addEdge, removeElements, Background, useStoreState, ReactFlowProvider } from 'react-flow-renderer';
 import NewNodeDrawButton from './components/NewNodeDrawButton';
 import PredicateDisplayDropDown from './components/PredicateDisplayDropDown';
 import CypherTextEditor from './components/TextEditor'
@@ -17,16 +17,9 @@ import useVisualActions from './hooks/useVisualActions'
 
 const api = require('./neo4jApi');
 
-const NodesDebugger = () => {
-  const nodes = useStoreState((state) => state.nodes);
-  const edges = useStoreState(state => state.edges)
-  console.log(nodes, edges);
-
-  return null;
-}
-
 function App() {
   const VA = useVisualActions()
+
   const [state, dispatch] = useContext(Context);
   const [pageStatus, setPageStatus] = useState('LOADING');
   const [showResults, setShowResults] = useState(false);
@@ -43,11 +36,8 @@ function App() {
   };
 
   useEffect(() => {
-    console.log('FROM APP: state change')
-    console.log(state)
     if(state.nodes && state.nodes.length > 0){
       const cypherString = api.convertToQuery(state)
-      console.log('FROM APP:', cypherString)
       setCypherQuery(cypherString)
     }
   }, [state])
@@ -110,7 +100,12 @@ function App() {
   };
 
   const addNode = (nodeName) => {
-    _internalDispatchGraph(VA.add(state, "NODE", {label: nodeName}))
+    const graph = VA.add(state, "NODE", {label: nodeName})
+
+    dispatch({
+      type: 'SET_GRAPH',
+      payload: graph
+    })
   }
 
   const renderContent = () => {
@@ -120,7 +115,6 @@ function App() {
         <Spin indicator={<LoadingOutlined style={{ fontSize: 42 }} spin />} style={{margin:'35% 50%'}} />
       </div>)
     } else if (pageStatus === "READY") {
-      console.log(state.modalVisible, 'HREHRE')
       return (
         <>
           <div>
@@ -156,34 +150,35 @@ function App() {
             {showHelp ? <Help hide={() => setShowHelp(false)} /> : null}
           </div>
 
-          <CypherTextEditor text={cypherQuery}/>
-          <ReactFlow
-            elements={state.nodes.map(
-                n => ({...n, data: {...n.data, color: n.color,radius:  n.radius, isBold: n.isBold}})
-              )
-              .concat(state.edges.map(
-                e => ({...e, data: {...e.data, isBold: e.isBold}})
-                ))}
-            style={{ width: '100%', height: '100vh' }}
-            nodeTypes={{ special: Node }}
-            edgeTypes={{ custom: CustomEdge }}
-            onElementsRemove={(elementsToRemove) =>
-              setToastInfo({
-                show: true,
-                msg: `Are you sure you want to remove this ${isEdge(elementsToRemove[0]) ? 'edge' : 'node'}?`,
-                confirm: () => onElementsRemove(elementsToRemove),
-              })
-            }
-            onConnect={onConnect}
-          >
-            <Controls className='controls-custom' />
-            <Background
-              style={{backgroundColor: '#ECEFF2'}}
-              variant="dots"
-              color="#343330"
-            />
-            {/* <NodesDebugger /> */}
-          </ReactFlow>
+          <ReactFlowProvider>
+            <CypherTextEditor text={cypherQuery}/>
+            <ReactFlow
+              elements={state.nodes.map(
+                  n => ({...n, data: {...n.data, color: n.color,radius:  n.radius, isBold: n.isBold}})
+                )
+                .concat(state.edges.map(
+                  e => ({...e, data: {...e.data, isBold: e.isBold}})
+                  ))}
+              style={{ width: '100%', height: '100vh' }}
+              nodeTypes={{ special: Node }}
+              edgeTypes={{ custom: CustomEdge }}
+              onElementsRemove={(elementsToRemove) =>
+                setToastInfo({
+                  show: true,
+                  msg: `Are you sure you want to remove this ${isEdge(elementsToRemove[0]) ? 'edge' : 'node'}?`,
+                  confirm: () => onElementsRemove(elementsToRemove),
+                })
+              }
+              onConnect={onConnect}
+            >
+              <Controls className='controls-custom' />
+              <Background
+                style={{backgroundColor: '#ECEFF2'}}
+                variant="dots"
+                color="#343330"
+              />
+            </ReactFlow>
+          </ReactFlowProvider>
 
           {toastInfo.show ? (
             <ConfirmationAlert

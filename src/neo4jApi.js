@@ -86,7 +86,6 @@ async function getProperties(entities) {
   results.forEach((values) => {
     Object.assign(ret, values);
   })
-  console.log('returning', ret)
   return ret;
 }
 
@@ -108,7 +107,6 @@ async function getResult(queryString) {
 }
 
 const convertToQuery = (state) => {
-  console.log('INSIDE CONVERTOQUERY:')
   // console.log(state)
   var loneNodeQueries = [];
   var returnVars = [];

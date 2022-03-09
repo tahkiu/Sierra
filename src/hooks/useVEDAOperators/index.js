@@ -9,7 +9,7 @@ const useVEDAOperators = () => {
   const [state, dispatch] = useContext(Context);
 
   class VEDAOperatorController {
-    process(graph, op, payload = {}){
+    process(graph, op, payload){
       if (op.length == 0) {
         throw "incorrect operators"
       }
@@ -32,7 +32,6 @@ const useVEDAOperators = () => {
     }
 
     appears(graph, op, payload) {
-      //* add a new node
       if (op[0] === "CIRCLE") {
         let arr = op[1].split(".")
         if (arr.length === 1) {
@@ -207,12 +206,8 @@ const useVEDAOperators = () => {
           const {sourcePos, targetPos} = payload
           const L = Math.sqrt((sourcePos.x - targetPos.x)**2 + (sourcePos.y - targetPos.y)**2)
           const minGap = 18
-          console.log(Object.keys(edgeTBC.data.predicates).length)
           const minArrowLength = 2 * (8 + minGap + (minGap + 16) * Math.ceil((Object.keys(edgeTBC.data.predicates).length - 1)/2))
-          console.log('L', L)
-          console.log('M', minArrowLength)
           if(L < minArrowLength) {
-            console.log('EXCEED')
             //* increase arrow length by 2r + minGap => increase length by 34
             const increase = (minGap + 16) / 2
             const gradient = (targetPos.y - sourcePos.y) / (targetPos.x - sourcePos.x)
@@ -222,10 +217,8 @@ const useVEDAOperators = () => {
 
             const srcId = edgeTBC.source;
             const destId = edgeTBC.target
-
             const srcNodeTBC = newNodes.find((el) => el.id === edgeTBC.source)
             const destNodeTBC = newNodes.find((el) => el.id === edgeTBC.target)
-
 
             const newSourcePos = {
               x: sourcePos.x - A - (srcNodeTBC.radius * 2 + 4),
@@ -235,13 +228,10 @@ const useVEDAOperators = () => {
               x: targetPos.x + A + 4,
               y: targetPos.y + O - destNodeTBC.radius
             }
-
             srcNodeTBC.position = newSourcePos;
             destNodeTBC.position = newDestPos;
           }
-
         }
-
         return {
           ...graph,
           edges: newEdges,
@@ -265,7 +255,6 @@ const useVEDAOperators = () => {
             preds[attr].detach(index)
           }
         }
-
         return {
           ...graph,
           nodes: newNodes
@@ -285,13 +274,11 @@ const useVEDAOperators = () => {
             preds[attr].detach(index)
           }
         }
-
         return {
           ...graph,
           edges: newEdges
         }
       }
-
     }
 
     addNewEdge(graph, payload) {
@@ -304,12 +291,9 @@ const useVEDAOperators = () => {
         return rs.label;
       });
 
-      console.log('current graph', nodesCpy)
-
       if(!destNode) {
         destNode = dest.data.label
       }
-
       let newParams = {...params}
       newParams.type = 'custom';
       newParams.arrowHeadType = 'arrowclosed';
@@ -325,20 +309,6 @@ const useVEDAOperators = () => {
       };
       newParams.id = `e${params.source}-${params.target}`
       const arrow = new Arrow(newParams)
-
-      // dispatch({
-      //   type: 'SET_EDGES',
-      //   payload: [...graph.edges, arrow],
-      // });
-      // dispatch({
-      //   type: 'MODIFY_NODE_DATA',
-      //   payload: { node: params.target, prop: 'connected', newVal: true },
-      // });
-      // dispatch({
-      //   type: 'MODIFY_NODE_DATA',
-      //   payload: { node: params.source, prop: 'connected', newVal: true },
-      // });
-
       const newNodes = [...graph.nodes]
       const dstNode = newNodes.find(el => el.id === params.target)
       const srcNode = newNodes.find(el => el.id === params.source)
@@ -376,20 +346,12 @@ const useVEDAOperators = () => {
           var destId = elementsToRemove[i].target;
           // if nodes connected by the removed edge are no longer connected in graph, set data.connected to false
           if (updatedEdges.find((el) => el.source === srcId || el.dest === srcId) === undefined) {
-            // dispatch({
-            //   type: 'MODIFY_NODE_DATA',
-            //   payload: { node: srcId, prop: 'connected', newVal: false },
-            // });
             const srcNode = newNodes.find(el => el.id === srcId)
             if(srcNode){
               srcNode.data.connected = false
             }
           }
           if (updatedEdges.find((el) => el.source === destId || el.dest === destId) === undefined) {
-            // dispatch({
-            //   type: 'MODIFY_NODE_DATA',
-            //   payload: { node: destId, prop: 'connected', newVal: false },
-            // });
             const destNode = newNodes.find(el => el.id === srcId)
             if(destNode){
               destNode.data.connected = false

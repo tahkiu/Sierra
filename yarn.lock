@@ -1447,6 +1447,11 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
+"@timohausmann/quadtree-js@^1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@timohausmann/quadtree-js/-/quadtree-js-1.2.5.tgz#65bafca1a3985bd81861f439ce2b459b2ce0dc1a"
+  integrity sha512-WcH3pouYtpyLjTCRvNP0WuSV4m7mRyYhLzW44egveFryT7pJhpDsdIJASEe37iCFNA0vmEpqTYGoG0siyXEthA==
+
 "@types/anymatch@*":
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@types/anymatch/-/anymatch-1.3.1.tgz#336badc1beecb9dacc38bea2cf32adf627a8421a"
