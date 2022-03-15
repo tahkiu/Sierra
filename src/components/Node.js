@@ -16,7 +16,6 @@ const api = require('../neo4jApi');
 
 function Node(props) {
   const VA = useVisualActions()
-  const [theta, setTheta] = useState({})
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
   const predicates = props.data.predicates ?? {};

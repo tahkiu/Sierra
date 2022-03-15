@@ -137,6 +137,65 @@ function CustomEdge({
     availRs[rsItem.type] = rsItem.props;
   });
 
+
+  const preds = () => {
+    switch(state.predDisplayStatus) {
+      case "FULL" :
+        return (
+          Object.keys(predicates).map((attr, index) => {
+            const circle = {...predicates[attr]}
+            const {position} = circle
+            delete circle.position
+
+            return (
+              <g key={attr} fill={circle.color.secondary}
+              stroke="black" strokeWidth="1">
+                <circle onClick={
+                    (e)=>{
+                      e.stopPropagation()
+                      setModalVisible(true)
+                    }
+                  }
+                  cx={sourceX < targetX ? sourceX + (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length) :
+                    sourceX - (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length)}
+                  cy={sourceY < targetY ? sourceY + (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) :
+                    sourceY - (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) }
+                  r={circle.radius} />
+                    <Predicate
+                      {...circle}
+                      position={{x:0, y: 0}}
+                    />
+              </g>
+            )})
+        );
+      case "SEMI" :
+        const x = sourceX < targetX ? sourceX + Math.abs(sourceX-targetX)/2 : sourceX - Math.abs(sourceX-targetX)/2
+        const y = sourceY < targetY ? sourceY + Math.abs(sourceY-targetY)/2 : sourceY - Math.abs(sourceY-targetY)/2
+        return (
+          <g>
+                <circle onClick={
+                    (e)=>{
+                      e.stopPropagation()
+                      setModalVisible(true)
+                    }
+                  }
+                  fill={'#ED1C24'}
+                  stroke="white"
+                  strokeWidth="1"
+                  cx={x}
+                  cy={y}
+                  r={10} />
+                <text fill="white" fontSize={13} textAnchor="middle" x={x} y={y + 4}>{Object.keys(predicates).length}</text>
+            </g>
+
+        )
+      default:
+        return (
+          <div />
+        )
+    }
+  }
+
   return (
     <>
       <path
@@ -153,31 +212,7 @@ function CustomEdge({
       >
 
       </path>
-      {Object.keys(predicates).map((attr, index) => {
-        const circle = {...predicates[attr]}
-        const {position} = circle
-        delete circle.position
-
-        return (
-          <g key={attr} fill={circle.color.secondary}
-          stroke="black" strokeWidth="1">
-            <circle onClick={
-                (e)=>{
-                  e.stopPropagation()
-                  setModalVisible(true)
-                }
-              }
-              cx={sourceX < targetX ? sourceX + (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length) :
-                sourceX - (1+index) * Math.abs(sourceX-targetX)/(1+Object.keys(predicates).length)}
-              cy={sourceY < targetY ? sourceY + (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) :
-                sourceY - (1+index) * Math.abs(sourceY-targetY)/(1+Object.keys(predicates).length) }
-              r={circle.radius} />
-                <Predicate
-                  {...circle}
-                  position={{x:0, y: 0}}
-                />
-            </g>
-        )}
+      {preds()}
       )}
 
       <text dy="-10px">

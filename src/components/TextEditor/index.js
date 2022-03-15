@@ -37,8 +37,10 @@ export default function({text}){
         edges: []
       }
       const nodePositionMap = {}
+      for(const oldNode of cnlNodes) {
+        nodePositionMap[oldNode.id] = oldNode.__rf.position
+      }
 
-      console.log(cnlNodes.map(n => n.__rf.position))
       for (const [key, n] of Object.entries(midNodes)) {
 
         let possibleNeighbours = state.neighbours[n.label].map(function (rs) {
@@ -54,20 +56,16 @@ export default function({text}){
           oldPosition = oldCopy.__rf.position
           oldRanTheta = oldCopy.ranTheta
         } else {
-          // check for collision
           let positions = Object.values(nodePositionMap)
-          if(positions.length > 0){
-            positions = positions.filter(e => {
-              console.log(e)
-              return e && e.x > 450 && e.x < 550
-            })
-          }
-
           console.log('pos', positions)
-
+          //nodePositionMap[]
+          let startHeight = 200
+          while (positions.filter(pos => (startHeight - 100 < pos.y) && (startHeight + 100 > pos.y)).length > 0) {
+            startHeight = startHeight + 120
+          }
+          oldPosition = {y: startHeight, x: 500}
+          nodePositionMap[n.nodeId] = oldPosition
         }
-
-        nodePositionMap[n.nodeId] = oldPosition
         newGraph = VA.add(newGraph, "NODE", {
           id: n.nodeId,
           label: n.label,
@@ -97,6 +95,7 @@ export default function({text}){
         }
       }
 
+      console.log('node map', nodePositionMap)
       for (const [key, e] of Object.entries(midEdges)) {
         newGraph = VA.add(newGraph, "EDGE", {
           params: {
@@ -108,6 +107,17 @@ export default function({text}){
             rep: e.rep
           }
         })
+
+        const targetNode = newGraph.nodes.find(el => el.id === e.target)
+        const sourceNode = newGraph.nodes.find(el => el.id === e.source)
+
+        if(!cnlNodes.find((el) => el.id === e.target)) {
+          const newPos = {y: nodePositionMap[e.source].y, x: nodePositionMap[e.source].x + 200}
+          targetNode.position = newPos
+          nodePositionMap[e.target] = newPos
+        }
+
+        console.log('target', targetNode)
         const edgeId = `e${e.source}-${e.target}`
         if(e.arrowHeadType) {
           newGraph = VA.update(newGraph, "EDGE", {
@@ -136,6 +146,14 @@ export default function({text}){
                 vals: [l, v],
                 parent: edgeId,
                 color,
+                sourcePos: {
+                  x: sourceNode.position.x + (sourceNode.radius * 2 + 4),
+                  y: sourceNode.position.y + sourceNode.radius
+                },
+                targetPos: {
+                 x: targetNode.position.x - 4,
+                 y: targetNode.position.y + targetNode.radius
+                }
               })
             }
           }

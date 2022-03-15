@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 function PredicateCountBubble(props) {
   // size of property circle depends on number of predicates on propert
   const n = Object.keys(props.predicates).length
-  const predRadius = 10;
+  const predRadius = 11;
 
   const predicateStyle = {
     background: '#ED1C24',
@@ -20,7 +20,7 @@ function PredicateCountBubble(props) {
   // x + R * cos(theta + (i)2pi/kn)
   return (
       <div style={predicateStyle}>
-        <p style={{position: 'relative', bottom: 2, fontSize: 13, color: '#FDFFFC'}}>{n}</p>
+        <p style={{position: 'relative', bottom: 1, fontSize: 13, color: '#FDFFFC'}}>{n}</p>
       </div>
   );
 }
