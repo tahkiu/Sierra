@@ -4,11 +4,11 @@ import { Drawer, Button, Collapse, Typography } from 'antd';
 import { useContext } from 'react';
 import { Context } from '../../Store'
 import { CaretRightOutlined, PlusOutlined } from '@ant-design/icons';
-
+import { USER_STUDY_ENTITIES } from '../../constants';
 const {Panel} = Collapse;
 const {Title, Text} = Typography;
 
-const NewNodeDrawButton = ({addNode}) => {
+const NewNodeDrawButton = ({addNode, userStudyDataset}) => {
   const [visible, setVisible] = useState(false);
   const [state, dispatch] = useContext(Context)
   const {entities, props} = state
@@ -49,7 +49,9 @@ const NewNodeDrawButton = ({addNode}) => {
           >
 
             {
-            entities.map((node, i) => {
+            entities
+              .filter((node) => USER_STUDY_ENTITIES[userStudyDataset].has(node))
+              .map((node, i) => {
               return (
                 <Panel
                   header={(<Title style={{marginBottom: 0}}level={5} >{node}</Title>)}

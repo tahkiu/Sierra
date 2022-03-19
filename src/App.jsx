@@ -3,6 +3,7 @@ import Node from './components/Node';
 import ReactFlow, { Controls, isEdge, addEdge, removeElements, Background, useStoreState, ReactFlowProvider } from 'react-flow-renderer';
 import NewNodeDrawButton from './components/NewNodeDrawButton';
 import PredicateDisplayDropDown from './components/PredicateDisplayDropDown';
+import UserStudyDatasetDropDown from './components/UserStudyDatasetDropDown';
 import CypherTextEditor from './components/TextEditor'
 import Help from './components/Help';
 import SearchResults from './components/SearchResults';
@@ -19,7 +20,6 @@ const api = require('./neo4jApi');
 
 function App() {
   const VA = useVisualActions()
-
   const [state, dispatch] = useContext(Context);
   const [pageStatus, setPageStatus] = useState('LOADING');
   const [showResults, setShowResults] = useState(false);
@@ -27,6 +27,9 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [toastInfo, setToastInfo] = useState({ show: false, msg: '', confirm: function () {} });
   const [cypherQuery, setCypherQuery] = useState('')
+
+  //* only for user study
+  const [userStudyDataset, setUserStudyDataset] = useState('Northwind')
 
   const handleSearch = async () => {
    // const res = await api.runQuery(cypherQuery); // VA.run()
@@ -132,8 +135,9 @@ function App() {
                   margin: '1px 14px 0px 6px'
                 }}
               />
-              <NewNodeDrawButton addNode={addNode}/>
+              <NewNodeDrawButton addNode={addNode} userStudyDataset={userStudyDataset} />
               <PredicateDisplayDropDown value={state.predDisplayStatus} onSelect={_internalDispatchPredDisplayStatus} />
+              <UserStudyDatasetDropDown value={userStudyDataset} onSelect={setUserStudyDataset} />
               <Button
                 style={{
                   width: 120,

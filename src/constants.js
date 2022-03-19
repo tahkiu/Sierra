@@ -1,5 +1,10 @@
 export const OPERATORS = ['=', '>', '>=', '<', '<=', '<>'];
 
+export const USER_STUDY_ENTITIES = {
+  'Northwind': new Set(['Product', 'Supplier', 'Customer', 'Order', 'Category']),
+  'Movies': new Set(['Movie', 'Person'])
+}
+
 // export const COLORS = [
 //   '#DB8B8B',
 //   '#F6B969',
