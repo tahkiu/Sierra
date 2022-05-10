@@ -46,15 +46,17 @@ function App() {
   }, [state])
 
   useEffect(() => {
-    fetchData().then((res) => {
-      dispatch({ type: 'SET_DATA', payload: res });
-      setPageStatus("READY")
-    });
     async function fetchData() {
       let result = await api.setUp();
       let props = await api.getProperties(result.entities);
       return { entities: result.entities, neighbours: result.neighbours, props: props };
     }
+
+    fetchData().then((res) => {
+      dispatch({ type: 'SET_DATA', payload: res });
+      setPageStatus("READY")
+    });
+
   }, []);
 
   const _internalDispatchPredDisplayStatus = (val) => {
@@ -72,13 +74,17 @@ function App() {
   }
   const onElementsRemove = (elementsToRemove) => {
     let graph
-    if(elementsToRemove[0].data.label){
-      graph = VA.delete(state, "NODE", {label: elementsToRemove[0].data.label, el: elementsToRemove})
-    } else {
-      graph = VA.delete(state, "EDGE", {
-        el: elementsToRemove,
-      })
+    console.log(elementsToRemove)
+    for(const el of elementsToRemove){
+      if(el.data.label){
+        graph = VA.delete(state, "NODE", {label: el.data.label, el: el})
+      } else {
+        graph = VA.delete(state, "EDGE", {
+          el: el,
+        })
+      }
     }
+
     _internalDispatchGraph(graph)
   };
 
@@ -156,6 +162,7 @@ function App() {
 
           <ReactFlowProvider>
             <CypherTextEditor text={cypherQuery}/>
+
             <ReactFlow
               elements={state.nodes.map(
                   n => ({...n, data: {...n.data, color: n.color,radius:  n.radius, isBold: n.isBold}})

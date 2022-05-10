@@ -4,7 +4,7 @@ export class Circle {
     this.id = id // if predicate: [attr; eg. country] else Node: "0/1/2..."
     this.position = position // can be undefined if predicate
     this.type = type //* to know which style of circle to use
-    this.data = data // eg. [0, Japan], [0, China]
+    this.data = data //* Circle[]
     this.color = color
     this.isBold = false
     this.componentType = componentType // componentType === "NODE" | "PREDICATE"
@@ -111,12 +111,10 @@ export class Circle {
         let checkAngle = angle % (Math.PI / 2)
         while ( checkAngle < 0.261799 || checkAngle > (Math.PI / 2) - 0.261799 ) {
           i++;
-          // console.log('skipped angle', angle)
           angle = this.ranTheta + ((2 * i * Math.PI) / (VEDAPosition.length + 4))
           checkAngle = angle % (Math.PI / 2)
       }
       if (pre !== '') {
-        // console.log(`${pre} assigned angle ${angle}`)
         theta[pre] = angle
       }
       i++;

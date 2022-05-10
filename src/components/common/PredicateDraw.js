@@ -76,7 +76,7 @@ const PredicateSelectorCard = ({
                 placeholder="Value"
                 optionFilterProp="children"
                 filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  `${option.children}`.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
               >
                 {options.map((v) => {

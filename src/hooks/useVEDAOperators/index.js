@@ -55,7 +55,7 @@ const useVEDAOperators = () => {
           //* add a new node
           return {
             ...graph,
-            nodes: removeElements(payload.el, graph.nodes)
+            nodes: removeElements([payload.el], graph.nodes)
           }
         } else {
           return this.deletePredicate(graph, payload)
@@ -127,6 +127,8 @@ const useVEDAOperators = () => {
     }
 
     //* lower level functions
+
+
     addNewNode(graph, op, payload = {}) {
       const nodeName = op[0]
       const addData = payload.data ?? {}
@@ -206,7 +208,8 @@ const useVEDAOperators = () => {
           const {sourcePos, targetPos} = payload
           const L = Math.sqrt((sourcePos.x - targetPos.x)**2 + (sourcePos.y - targetPos.y)**2)
           const minGap = 18
-          const minArrowLength = 2 * (8 + minGap + (minGap + 16) * Math.ceil((Object.keys(edgeTBC.data.predicates).length - 1)/2))
+          const minArrowLength = 2 * (8 + minGap + (minGap + 16) *
+            Math.ceil((Object.keys(edgeTBC.data.predicates).length - 1)/2))
           if(L < minArrowLength) {
             //* increase arrow length by 2r + minGap => increase length by 34
             const increase = (minGap + 16) / 2
@@ -329,36 +332,32 @@ const useVEDAOperators = () => {
 
     deleteEdge(graph, payload) {
       const elementsToRemove = payload.el
-      var updatedEdges = removeElements(elementsToRemove, graph.edges);
-      const newGraph = {...graph}
+      var updatedEdges = removeElements([elementsToRemove], graph.edges);
+      let newGraph = {...graph}
       const newNodes = [...newGraph.nodes]
-      dispatch({
-        type: 'SET_EDGES',
-        payload: updatedEdges,
-      });
       newGraph = {
         ...newGraph,
         edges: updatedEdges
       }
-      for (var i = 0; i < elementsToRemove.length; i++) {
-        if (isEdge(elementsToRemove[i])) {
-          var srcId = elementsToRemove[i].source;
-          var destId = elementsToRemove[i].target;
-          // if nodes connected by the removed edge are no longer connected in graph, set data.connected to false
-          if (updatedEdges.find((el) => el.source === srcId || el.dest === srcId) === undefined) {
-            const srcNode = newNodes.find(el => el.id === srcId)
-            if(srcNode){
-              srcNode.data.connected = false
-            }
+
+      if (isEdge(elementsToRemove)) {
+        var srcId = elementsToRemove.source;
+        var destId = elementsToRemove.target;
+        // if nodes connected by the removed edge are no longer connected in graph, set data.connected to false
+        if (updatedEdges.find((el) => el.source === srcId || el.dest === srcId) === undefined) {
+          const srcNode = newNodes.find(el => el.id === srcId)
+          if(srcNode){
+            srcNode.data.connected = false
           }
-          if (updatedEdges.find((el) => el.source === destId || el.dest === destId) === undefined) {
-            const destNode = newNodes.find(el => el.id === srcId)
-            if(destNode){
-              destNode.data.connected = false
-            }
+        }
+        if (updatedEdges.find((el) => el.source === destId || el.dest === destId) === undefined) {
+          const destNode = newNodes.find(el => el.id === srcId)
+          if(destNode){
+            destNode.data.connected = false
           }
         }
       }
+
       return {
         ...newGraph,
         nodes: newNodes

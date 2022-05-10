@@ -26,6 +26,8 @@ export default function({text}){
       })
     }
   }
+
+
   const handleSearch = () => {
     try {
       resetCurAvailId()
@@ -42,16 +44,13 @@ export default function({text}){
       }
 
       for (const [key, n] of Object.entries(midNodes)) {
-
         let possibleNeighbours = state.neighbours[n.label].map(function (rs) {
           return rs.label;
         });
         possibleNeighbours = [...new Set(possibleNeighbours)];
-
         const oldCopy = cnlNodes.find((el) => el.id === n.nodeId)
         let oldPosition = {x: 500, y: 200}
         let oldRanTheta
-
         if (oldCopy && n.label === oldCopy.data.label) {
           oldPosition = oldCopy.__rf.position
           oldRanTheta = oldCopy.ranTheta
@@ -76,7 +75,6 @@ export default function({text}){
             rep: key,
           }
         })
-
         if(n.predicates) {
           for(const key in n.predicates) {
             const preds = n.predicates[key]
@@ -94,8 +92,6 @@ export default function({text}){
           }
         }
       }
-
-      console.log('node map', nodePositionMap)
       for (const [key, e] of Object.entries(midEdges)) {
         newGraph = VA.add(newGraph, "EDGE", {
           params: {
@@ -107,17 +103,13 @@ export default function({text}){
             rep: e.rep
           }
         })
-
         const targetNode = newGraph.nodes.find(el => el.id === e.target)
         const sourceNode = newGraph.nodes.find(el => el.id === e.source)
-
         if(!cnlNodes.find((el) => el.id === e.target)) {
           const newPos = {y: nodePositionMap[e.source].y, x: nodePositionMap[e.source].x + 200}
           targetNode.position = newPos
           nodePositionMap[e.target] = newPos
         }
-
-        console.log('target', targetNode)
         const edgeId = `e${e.source}-${e.target}`
         if(e.arrowHeadType) {
           newGraph = VA.update(newGraph, "EDGE", {

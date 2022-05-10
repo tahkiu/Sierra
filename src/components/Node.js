@@ -19,7 +19,7 @@ function Node(props) {
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
   const predicates = props.data.predicates ?? {};
-
+  console.log('modal', state.modalVisible)
   // console.log(`node ${props.data.label}, ${props.xPos}, ${props.yPos}`)
   useEffect(async () => {
     const propValues = await api.fetchPropertyValues(props.data.label);
@@ -152,46 +152,49 @@ function Node(props) {
     }
   }
   return (
-    <div
-      id={'node-' + props.data.label}
-      className="node"
-      style={{
-        background: props.data.color,
-        height: `${props.data.radius * 2}px`,
-        width: `${props.data.radius * 2}px`,
-        border: props.data.isBold ? '1px solid #2F2F2F' : ''
-      }}
-    >
-      <Handle type="target" position="left" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
-      <Handle type="source" position="right" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
-      {preds()}
-
-      <div style={{ position: 'relative', top: '50%', transform: 'translateY(-50%)' }}>
-        <p className="h6"
-          onMouseDown={e => mouseDownCoords(e)}
+    <>
+      <div
+        id={'node-' + props.data.label}
+        className="node"
+        onMouseDown={e => mouseDownCoords(e)}
           onMouseUp={(e) => {
-            if(isClick(e)) {
-              handleClick(e)
-            }
-          }}
-        >
-          {props.data.label}
-        </p>
+          if(isClick(e)) {
+            e.stopPropagation()
+            handleClick(e)
+          }
+        }}
+        style={{
+          background: props.data.color,
+          height: `${props.data.radius * 2}px`,
+          width: `${props.data.radius * 2}px`,
+          border: props.data.isBold ? '1px solid #2F2F2F' : ''
+        }}
+      >
+        <Handle type="target" position="left" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
+        <Handle type="source" position="right" style={{ zIndex: 100, height: '0.6rem', width: '0.6rem' }} />
+        {preds()}
+
+        <div
+          style={{ position: 'relative', top: '50%', transform: 'translateY(-50%)' }}>
+          <p className="h6">
+            {props.data.label}
+          </p>
+        </div>
       </div>
       <NodePredicateModal
-        node={props.data.label}
-        nodeId={props.id}
-        targets={props.data.possibleTargets}
-        attributes={props.data.attributes}
-        predicates={predicates}
-        visible={state.modalVisible === props.id}
-        addPredicate={addPredicate}
-        deletePredicate={deletePredicate}
-        updatePredicate={updatePredicate}
-        propData={propData}
-        currPos={[props.xPos, props.yPos]}
-        onClose={() => {setShowDetails(false)}} />
-    </div>
+      node={props.data.label}
+      nodeId={props.id}
+      targets={props.data.possibleTargets}
+      attributes={props.data.attributes}
+      predicates={predicates}
+      visible={state.modalVisible === props.id}
+      addPredicate={addPredicate}
+      deletePredicate={deletePredicate}
+      updatePredicate={updatePredicate}
+      propData={propData}
+      currPos={[props.xPos, props.yPos]}
+      onClose={() => {setShowDetails(false)}} />
+    </>
   );
 }
 

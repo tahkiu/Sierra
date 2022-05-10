@@ -8,9 +8,8 @@ let database = process.env.NEO4J_DATABASE;
 if (!neo4jVersion.startsWith('4')) {
   database = null;
 }
-const driver = neo4j.driver(neo4jUri, neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD));
 
-console.log(`Database running at ${neo4jUri}`);
+const driver = neo4j.driver(neo4jUri, neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD));
 
 // fetch all node entities and list of neighbours for each node entity
 async function setUp() {
@@ -107,7 +106,6 @@ async function getResult(queryString) {
 }
 
 const convertToQuery = (state) => {
-  // console.log(state)
   var loneNodeQueries = [];
   var returnVars = [];
   var allPredsArr = [];
@@ -119,12 +117,9 @@ const convertToQuery = (state) => {
       curNode.data['rep'] = (parseInt(curNode.id) + 10).toString(36);
       returnVars.push(curNode.data.rep);
     }
-
     if (!curNode.data.connected) {
       loneNodeQueries.push(`(${curNode.data.rep}:${curNode.data.label})`);
     }
-
-    //TODO: fails when node has no predicate (process predicates)
     let nodePredsArr = ''
     if (curNode.data.predicates) {
       nodePredsArr = Object.keys(curNode.data.predicates).map(function (attr) {
@@ -139,12 +134,9 @@ const convertToQuery = (state) => {
         return predsQueryString;
       });
     }
-
     allPredsArr = allPredsArr.concat(nodePredsArr);
   }
-
   var allRsQueries = [];
-
   for (var i = 0; i < state.edges.length; i++) {
     var srcNode = state.nodes.find((el) => el.id === state.edges[i].source);
     var destNode = state.nodes.find((el) => el.id === state.edges[i].target);
