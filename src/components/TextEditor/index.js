@@ -56,7 +56,7 @@ export default function({text}){
           oldRanTheta = oldCopy.ranTheta
         } else {
           let positions = Object.values(nodePositionMap)
-          console.log('pos', positions)
+          // console.log('pos', positions)
           //nodePositionMap[]
           let startHeight = 200
           while (positions.filter(pos => (startHeight - 100 < pos.y) && (startHeight + 100 > pos.y)).length > 0) {

@@ -19,8 +19,7 @@ function Node(props) {
   const [state, dispatch] = useContext(Context);
   const [propData, setPropData] = useState([]);
   const predicates = props.data.predicates ?? {};
-  console.log('modal', state.modalVisible)
-  // console.log(`node ${props.data.label}, ${props.xPos}, ${props.yPos}`)
+
   useEffect(async () => {
     const propValues = await api.fetchPropertyValues(props.data.label);
     setPropData(propValues);

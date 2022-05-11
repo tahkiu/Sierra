@@ -22,7 +22,7 @@ const processMatchSubquery = (s, midState, repToElementMap, state) => {
               let node = q.slice(cur+1, i)
               node = node.split(":")
               if(node.length !== 2){
-                  console.log('16')
+                  // console.log('16')
                   throw 'Query unsupported by SIERRA';
               }
               reps.push(node)

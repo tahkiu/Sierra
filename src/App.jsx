@@ -24,15 +24,13 @@ function App() {
   const [pageStatus, setPageStatus] = useState('LOADING');
   const [showResults, setShowResults] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
-  const [showHelp, setShowHelp] = useState(false);
   const [toastInfo, setToastInfo] = useState({ show: false, msg: '', confirm: function () {} });
   const [cypherQuery, setCypherQuery] = useState('')
 
   //* only for user study
-  const [userStudyDataset, setUserStudyDataset] = useState('Northwind')
+  // const [userStudyDataset, setUserStudyDataset] = useState('Northwind')
 
   const handleSearch = async () => {
-   // const res = await api.runQuery(cypherQuery); // VA.run()
     const res = await VA.run(cypherQuery)
     setSearchResult(res);
     setShowResults(true);
@@ -130,20 +128,13 @@ function App() {
             <div className="main-buttons">
               {state.modalVisible !== '' && (<div style={{width: 363}}/>)}
               <Title
-                style={{margin: 0}}
+                style={{margin: 0, marginRight: 14}}
                 level={3}>
                   SIERRA
               </Title>
-              <InfoCircleOutlined
-                onClick={() => setShowHelp(!showHelp)}
-                style={{
-                  fontSize: '16px',
-                  margin: '1px 14px 0px 6px'
-                }}
-              />
-              <NewNodeDrawButton addNode={addNode} userStudyDataset={userStudyDataset} />
+              <NewNodeDrawButton addNode={addNode} />
               <PredicateDisplayDropDown value={state.predDisplayStatus} onSelect={_internalDispatchPredDisplayStatus} />
-              <UserStudyDatasetDropDown value={userStudyDataset} onSelect={setUserStudyDataset} />
+              {/* <UserStudyDatasetDropDown value={userStudyDataset} onSelect={setUserStudyDataset} /> */}
               <Button
                 style={{
                   width: 120,
@@ -157,7 +148,6 @@ function App() {
                 Play
               </Button>
             </div>
-            {showHelp ? <Help hide={() => setShowHelp(false)} /> : null}
           </div>
 
           <ReactFlowProvider>

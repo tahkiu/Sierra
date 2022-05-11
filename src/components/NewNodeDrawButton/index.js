@@ -8,7 +8,7 @@ import { USER_STUDY_ENTITIES } from '../../constants';
 const {Panel} = Collapse;
 const {Title, Text} = Typography;
 
-const NewNodeDrawButton = ({addNode, userStudyDataset}) => {
+const NewNodeDrawButton = ({addNode}) => {
   const [visible, setVisible] = useState(false);
   const [state, dispatch] = useContext(Context)
   const {entities, props} = state
@@ -50,7 +50,7 @@ const NewNodeDrawButton = ({addNode, userStudyDataset}) => {
 
             {
             entities
-              .filter((node) => USER_STUDY_ENTITIES[userStudyDataset].has(node))
+              // .filter((node) => USER_STUDY_ENTITIES[userStudyDataset].has(node))
               .map((node, i) => {
               return (
                 <Panel

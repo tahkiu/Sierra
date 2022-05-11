@@ -7,7 +7,7 @@ First, enter the configuration details in ./config/webpack.common.js (lines 123-
 ```
 new webpack.EnvironmentPlugin({
   NEO4J_URI: 'bolt://localhost:7687',
-  NEO4J_DATABASE: 'Northwind',
+  NEO4J_DATABASE: 'neo4j',
   NEO4J_USER: 'neo4j',
   NEO4J_PASSWORD: 'password',
   NEO4J_VERSION: '',
@@ -22,13 +22,8 @@ Then, start running the database on Neo4j. Ensure that the database is active as
 Firstly, build the docker image using the command
 
 ```sh
-$ docker build -t fyp/sierra .
-```
-
-Next, run the docker image using
-
-```sh
-$ docker run -d -it -p 3000:3000 --name sierra fyp/sierra:latest
+$ npm install
+$ npm start
 ```
 
 The application will start running at http://localhost:3000/.
