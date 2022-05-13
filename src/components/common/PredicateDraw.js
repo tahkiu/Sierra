@@ -1,7 +1,6 @@
 import { Drawer, Button, Typography, Divider, Card, Form, Select, Tooltip } from 'antd';
 import { DeleteOutlined, PlusOutlined, ArrowLeftOutlined} from '@ant-design/icons';
 import React, {useState, useEffect} from 'react';
-import { cssNumber } from 'jquery';
 
 const neo4j = require('neo4j-driver');
 
